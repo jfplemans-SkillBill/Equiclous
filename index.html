@@ -5,8 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
   <title>Jeu d'équilibre — Solution</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
+  <!--
+    ORDRE CRITIQUE : A-Frame DOIT être chargé AVANT MindAR
+    Ne pas changer cet ordre, sinon "AFRAME is not defined"
+  -->
   <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image.prod.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
@@ -15,13 +19,11 @@
     :root {
       --dark:   #0D0D1A;
       --card:   #16162A;
-      --card2:  rgba(255,255,255,0.04);
       --border: #2A2A4A;
       --accent: #E94560;
       --gold:   #F5C842;
       --green:  #27AE60;
       --purple: #A855F7;
-      --red:    #E74C3C;
       --muted:  #8888AA;
       --text:   #E8E8F0;
       --font:   'Segoe UI', system-ui, sans-serif;
@@ -34,22 +36,35 @@
       color: var(--text);
     }
 
-    button { font-family: var(--font); -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+    /* A-Frame injecte des styles sur body au chargement — on les neutralise */
+    body { overflow: auto !important; }
 
-    /* ══════════════════════════════════════════════════════
-       ÉCRAN D'ACCUEIL
-    ══════════════════════════════════════════════════════ */
+    button {
+      font-family: var(--font);
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+
+    /* ── Écran d'accueil ──────────────────────────────────── */
     #ecran-accueil {
       min-height: 100vh;
       display: flex; flex-direction: column; align-items: center;
       padding: 28px 18px 40px;
+      position: relative; z-index: 1;
     }
 
     #accueil-inner { width: 100%; max-width: 440px; }
 
     .entete { text-align: center; margin-bottom: 22px; }
-    .logo { display: block; font-size: 48px; margin-bottom: 10px; animation: flotter 3s ease-in-out infinite; }
-    @keyframes flotter { 0%,100% { transform: translateY(0);} 50%{ transform: translateY(-7px);} }
+    .logo {
+      display: block; font-size: 48px; margin-bottom: 10px;
+      animation: flotter 3s ease-in-out infinite;
+    }
+    @keyframes flotter {
+      0%,100% { transform: translateY(0); }
+      50%      { transform: translateY(-7px); }
+    }
     h1 { font-size: 1.45rem; font-weight: 700; margin-bottom: 6px; }
     h1 span { color: var(--accent); }
     .description {
@@ -64,27 +79,46 @@
       padding: 16px 20px; margin: 20px 0;
       display: flex; align-items: center; justify-content: space-between;
     }
-    #score-txt-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; }
-    #score-valeur { font-size: 1.9rem; font-weight: 900; line-height: 1; transition: color 0.4s; }
+    #score-txt-label {
+      font-size: 0.72rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 1.5px;
+      display: block; margin-bottom: 4px;
+    }
+    #score-valeur {
+      font-size: 1.9rem; font-weight: 900; line-height: 1;
+      color: var(--green); transition: color 0.4s;
+    }
     .score-flash { animation: flash 0.5s ease; }
-    @keyframes flash { 0%{ transform: scale(1.25);} 100%{ transform: scale(1);} }
+    @keyframes flash {
+      0%   { transform: scale(1.25); }
+      100% { transform: scale(1); }
+    }
     #score-sur { font-size: 0.8rem; color: var(--muted); }
 
     /* Carte indices */
-    .carte { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px 16px; margin-bottom: 14px; }
-    .carte-titre { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin-bottom: 12px; }
+    .carte {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 18px 16px; margin-bottom: 14px;
+    }
+    .carte-titre {
+      display: block; font-size: 0.72rem; text-transform: uppercase;
+      letter-spacing: 2px; color: var(--muted); margin-bottom: 12px;
+    }
 
     #liste-indices { display: flex; flex-direction: column; gap: 8px; }
 
     .btn-indice {
       display: flex; align-items: center; justify-content: space-between;
       padding: 13px 16px; border-radius: 12px; border: 2px solid transparent;
-      cursor: pointer; font-weight: 700; font-size: 0.9rem; color: white;
-      transition: transform 0.12s, opacity 0.2s; width: 100%;
+      font-weight: 700; font-size: 0.9rem; color: white;
+      transition: transform 0.12s; width: 100%; text-align: left;
     }
     .btn-indice:active { transform: scale(0.97); }
 
-    .btn-indice.disponible { background: linear-gradient(135deg,#7B1030,#E94560); border-color:#FF6B8A; }
+    .btn-indice.disponible {
+      background: linear-gradient(135deg,#7B1030,#E94560);
+      border-color: #FF6B8A;
+    }
     .btn-indice.vu {
       background: rgba(255,255,255,0.03); border-color: var(--border);
       color: var(--muted); cursor: not-allowed;
@@ -99,11 +133,14 @@
       display: none;
       background: linear-gradient(135deg, rgba(168,85,247,0.10), rgba(168,85,247,0.03));
       border: 1px solid rgba(168,85,247,0.30); border-radius: 16px;
-      padding: 18px 18px; margin-bottom: 14px; text-align: center;
+      padding: 18px; margin-bottom: 14px; text-align: center;
     }
     #carte-proverbe.visible { display: block; }
     .proverbe-ico { font-size: 30px; margin-bottom: 8px; display: block; }
-    .proverbe-texte { font-style: italic; font-size: 0.92rem; line-height: 1.5; color: #E8D5FF; margin-bottom: 6px; }
+    .proverbe-texte {
+      font-style: italic; font-size: 0.92rem; line-height: 1.5;
+      color: #E8D5FF; margin-bottom: 6px; display: block;
+    }
     .proverbe-source { font-size: 0.76rem; color: var(--muted); }
 
     /* Boutons solution */
@@ -113,21 +150,18 @@
     .btn-solution {
       display: flex; align-items: center; justify-content: center; gap: 8px;
       padding: 15px; border-radius: 14px; border: none;
-      font-weight: 700; font-size: 0.95rem; color: white; cursor: pointer;
+      font-weight: 700; font-size: 0.95rem; color: white;
       transition: transform 0.12s;
     }
     .btn-solution:active { transform: scale(0.97); }
     .btn-video { background: linear-gradient(135deg,#8B0000,#E74C3C); }
     .btn-3d    { background: linear-gradient(135deg,#7B3F00,#F5A623); }
 
-    /* ══════════════════════════════════════════════════════
-       OVERLAY — Image indice
-    ══════════════════════════════════════════════════════ */
+    /* ── Overlays (image + vidéo) ───────────────────────── */
     .overlay {
       position: fixed; inset: 0; z-index: 900;
       background: rgba(0,0,0,0.97);
       display: none; flex-direction: column;
-      align-items: center; justify-content: center;
     }
     .overlay.visible { display: flex; }
 
@@ -137,78 +171,94 @@
       display: flex; align-items: center; justify-content: space-between;
       border-bottom: 1px solid rgba(255,255,255,0.08); flex-shrink: 0;
     }
-    .overlay-header span { font-size: 0.85rem; font-weight: 700; }
+    .overlay-header span { font-size: 0.85rem; font-weight: 700; color: white; }
+
     .btn-fermer {
       background: rgba(255,255,255,0.10); border: none; border-radius: 8px;
-      padding: 8px 16px; color: white; font-size: 0.82rem; font-weight: 700; cursor: pointer;
+      padding: 8px 16px; color: white; font-size: 0.82rem; font-weight: 700;
     }
 
-    #overlay-image .overlay-body { flex:1; width:100%; display:flex; align-items:center; justify-content:center; padding:16px; }
+    .overlay-body {
+      flex: 1; width: 100%; display: flex;
+      align-items: center; justify-content: center; padding: 16px;
+    }
     #img-indice { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 10px; }
 
-    #overlay-video .overlay-body { flex:1; width:100%; display:flex; align-items:center; justify-content:center; }
+    #overlay-video .overlay-body { padding: 0; }
     #iframe-yt { width: 100%; aspect-ratio: 16/9; border: none; max-height: 65vh; }
 
-    /* ══════════════════════════════════════════════════════
-       ÉCRAN AR (Solution 3D)
-    ══════════════════════════════════════════════════════ */
+    /* ── Écran AR ───────────────────────────────────────── */
     #ecran-ar {
       position: fixed; inset: 0; z-index: 800;
-      display: none;
-      background: #000;
+      display: none; background: #000;
     }
     #ecran-ar.visible { display: block; }
 
-    #ecran-ar a-scene { position: fixed !important; inset: 0 !important; width: 100% !important; height: 100% !important; }
-
     #ar-chargement {
-      position: fixed; inset: 0; z-index: 850;
+      position: fixed; inset: 0; z-index: 860;
       background: var(--dark);
-      display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center; gap: 16px;
     }
     #ar-chargement.visible { display: flex; }
+
     .spinner {
-      width: 46px; height: 46px; border: 3px solid #2A2A4A; border-top-color: var(--accent);
+      width: 46px; height: 46px;
+      border: 3px solid #2A2A4A; border-top-color: var(--accent);
       border-radius: 50%; animation: spin 0.85s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     #ar-chargement p { color: var(--muted); font-size: 0.88rem; text-align: center; padding: 0 30px; line-height: 1.6; }
 
     #ar-scan-hint {
-      position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
-      z-index: 810; text-align: center; pointer-events: none;
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      z-index: 820; text-align: center; pointer-events: none;
+      display: none;
     }
     .cadre-scan {
-      width: 190px; height: 190px; border: 3px solid rgba(255,255,255,0.55);
-      border-radius: 22px; margin: 0 auto 14px; animation: pulse-cadre 2s ease-in-out infinite;
+      width: 190px; height: 190px;
+      border: 3px solid rgba(255,255,255,0.55); border-radius: 22px;
+      margin: 0 auto 14px; animation: pulse-cadre 2s ease-in-out infinite;
     }
-    @keyframes pulse-cadre { 0%,100%{ border-color: rgba(255,255,255,0.35);} 50%{ border-color: rgba(255,255,255,0.9);} }
-    #ar-scan-hint p { color: rgba(255,255,255,0.85); font-size: 0.82rem; background: rgba(13,13,26,0.65); border-radius: 10px; padding: 6px 14px; display: inline-block; }
+    @keyframes pulse-cadre {
+      0%,100% { border-color: rgba(255,255,255,0.35); }
+      50%      { border-color: rgba(255,255,255,0.9); }
+    }
+    #ar-scan-hint p {
+      color: rgba(255,255,255,0.85); font-size: 0.82rem;
+      background: rgba(13,13,26,0.65); border-radius: 10px;
+      padding: 6px 14px; display: inline-block;
+    }
 
     #ar-barre-haut {
-      position: fixed; top: max(12px, env(safe-area-inset-top)); left: 0; right: 0; z-index: 820;
+      position: fixed; top: max(12px, env(safe-area-inset-top));
+      left: 0; right: 0; z-index: 830;
       display: flex; justify-content: center; padding: 0 14px;
     }
     #btn-retour-accueil {
-      background: rgba(13,13,26,0.90); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      background: rgba(13,13,26,0.90);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255,255,255,0.12); color: white;
       border-radius: 24px; padding: 10px 20px;
-      font-size: 0.85rem; font-weight: 700; cursor: pointer;
+      font-size: 0.85rem; font-weight: 700;
       display: flex; align-items: center; gap: 6px;
     }
 
-    /* Responsive petit écran */
-    @media (max-width: 360px) {
-      h1 { font-size: 1.25rem; }
-      #score-valeur { font-size: 1.6rem; }
+    #ar-scene-conteneur {
+      position: fixed; inset: 0; z-index: 810;
+    }
+    #ar-scene-conteneur a-scene {
+      position: fixed !important; inset: 0 !important;
+      width: 100% !important; height: 100% !important;
     }
   </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════════════════════
+<!-- ══════════════════════════════════════════════
      ÉCRAN D'ACCUEIL
-══════════════════════════════════════════════════════════ -->
+══════════════════════════════════════════════ -->
 <div id="ecran-accueil">
   <div id="accueil-inner">
 
@@ -216,37 +266,31 @@
       <span class="logo">⚖️</span>
       <h1>Jeu d'<span>équilibre</span></h1>
       <p class="description">
-        Placez les 6 pièces en équilibre sur le 7ᵉ élément. Si vous êtes bloqué,
-        utilisez les indices ci-dessous — chacun coûte des points. Trouvez la solution
-        avec le moins d'indices possible pour maximiser votre score !
+        Placez les 6 pièces en équilibre sur le 7ᵉ élément.
+        Si vous êtes bloqué, utilisez les indices — chacun coûte des points.
+        Trouvez la solution avec le moins d'indices possible !
       </p>
     </div>
 
-    <!-- Score -->
     <div id="score-carte">
       <div>
-        <div id="score-txt-label">Votre score</div>
-        <div id="score-valeur">100</div>
+        <span id="score-txt-label">Votre score</span>
+        <span id="score-valeur">100</span>
       </div>
       <div id="score-sur">/ 100 points</div>
     </div>
 
-    <!-- Liste des indices -->
     <div class="carte">
       <span class="carte-titre">Indices disponibles</span>
-      <div id="liste-indices">
-        <!-- Générés dynamiquement par JS -->
-      </div>
+      <div id="liste-indices"></div>
     </div>
 
-    <!-- Proverbe -->
     <div id="carte-proverbe">
       <span class="proverbe-ico">🧠</span>
-      <p class="proverbe-texte" id="texte-proverbe"></p>
-      <p class="proverbe-source" id="source-proverbe"></p>
+      <span class="proverbe-texte" id="texte-proverbe"></span>
+      <span class="proverbe-source" id="source-proverbe"></span>
     </div>
 
-    <!-- Solutions -->
     <div id="zone-solutions">
       <button class="btn-solution btn-video" onclick="ouvrirVideo()">▶ Solution vidéo</button>
       <button class="btn-solution btn-3d"    onclick="ouvrirAR()">🏆 Solution en 3D (caméra)</button>
@@ -255,9 +299,9 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     OVERLAY — Image indice
-══════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════
+     OVERLAY IMAGE INDICE
+══════════════════════════════════════════════ -->
 <div id="overlay-image" class="overlay">
   <div class="overlay-header">
     <span id="label-overlay-img">Indice</span>
@@ -268,9 +312,9 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     OVERLAY — Vidéo YouTube
-══════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════
+     OVERLAY VIDÉO YOUTUBE
+══════════════════════════════════════════════ -->
 <div id="overlay-video" class="overlay">
   <div class="overlay-header">
     <span>▶ Solution vidéo</span>
@@ -283,105 +327,92 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     ÉCRAN AR — Solution 3D
-══════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════
+     ÉCRAN AR
+══════════════════════════════════════════════ -->
 <div id="ecran-ar">
-
   <div id="ar-chargement" class="visible">
     <div class="spinner"></div>
     <p>Démarrage de la caméra…<br>Acceptez l'accès si demandé.</p>
   </div>
-
-  <div id="ar-scan-hint" style="display:none;">
+  <div id="ar-scan-hint">
     <div class="cadre-scan"></div>
     <p>Pointez vers le marqueur</p>
   </div>
-
   <div id="ar-barre-haut">
     <button id="btn-retour-accueil" onclick="fermerAR()">← Retour à l'accueil</button>
   </div>
-
-  <!-- La scène AR est injectée ici dynamiquement par JavaScript,
-       uniquement quand on appuie sur "Solution en 3D".
-       Elle n'existe pas dans la page au chargement, pour éviter
-       tout conflit avec le reste de la page (accueil, indices, score). -->
   <div id="ar-scene-conteneur"></div>
-
 </div>
 
-<!-- ══════════════════════════════════════════════════════════
-     ✏️  CONFIGURATION — modifiez uniquement cette section
-══════════════════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════
+     ✏️  CONFIGURATION — modifiez uniquement ici
+══════════════════════════════════════════════ -->
 <script>
 
-/* ── Barème des points par indice ──────────────────────────── */
+/* Barème des points */
 const BAREME = { 1: -10, 2: -15, 3: -20, 4: -25, 5: -30, 6: -30 };
 
-/* ── Vos 6 fichiers image d'indices ─────────────────────────── 
-   Placez-les dans le dossier /indices/ sur GitHub              */
+/* Vos 6 photos indices — placez-les dans /indices/ sur GitHub */
 const INDICES = [
-  { src: "Indices/indice1.jpg", label: "Indice n°1" },
-  { src: "Indices/indice2.jpg", label: "Indice n°2" },
-  { src: "Indices/indice3.jpg", label: "Indice n°3" },
-  { src: "Indices/indice4.jpg", label: "Indice n°4" },
-  { src: "Indices/indice5.jpg", label: "Indice n°5" },
-  { src: "Indices/indice6.jpg", label: "Indice n°6" },
+  { src: "indices/indice1.jpg", label: "Indice n°1" },
+  { src: "indices/indice2.jpg", label: "Indice n°2" },
+  { src: "indices/indice3.jpg", label: "Indice n°3" },
+  { src: "indices/indice4.jpg", label: "Indice n°4" },
+  { src: "indices/indice5.jpg", label: "Indice n°5" },
+  { src: "indices/indice6.jpg", label: "Indice n°6" },
 ];
 
-/* ── Le proverbe affiché une fois les 6 indices vus ─────────── 
-   ✏️ Un seul proverbe fixe — modifiez le texte ici              */
+/* Le proverbe — modifiez le texte ici */
 const PROVERBE = {
   texte:  "L'intelligence, c'est la capacité de s'adapter au changement.",
   source: "— Stephen Hawking"
 };
 
-/* ── ID de votre vidéo YouTube ─────────────────────────────────
-   Exemple : youtube.com/watch?v=dQw4w9WgXcQ → dQw4w9WgXcQ       */
-const YOUTUBE_ID = y3PD9N3GqLQ;
+/*
+  ✏️ YOUTUBE : collez uniquement l'ID de votre vidéo entre les guillemets
+  Exemple : pour youtube.com/watch?v=dQw4w9WgXcQ → mettez "dQw4w9WgXcQ"
+*/
+const YOUTUBE_ID = "dQw4w9WgXcQ";
 
-/* ══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════
    LOGIQUE — ne pas modifier en dessous
-══════════════════════════════════════════════════════════════ */
-let score = 100;
-let indiceActuel = 0;       // nombre d'indices déjà vus (0 à 6)
-let historiquePoints = [];
+═══════════════════════════════════════════ */
+let score        = 100;
+let indiceActuel = 0;
+let sceneArEl    = null;
 
-/* ── Construction dynamique de la liste des boutons indices ─── */
 function construireListeIndices() {
   const conteneur = document.getElementById('liste-indices');
   conteneur.innerHTML = '';
 
-  INDICES.forEach((ind, i) => {
-    const num = i + 1;
-    const btn = document.createElement('button');
+  INDICES.forEach(function(ind, i) {
+    var num = i + 1;
+    var btn = document.createElement('button');
     btn.id = 'btn-indice-' + num;
 
-    if (num < indiceActuel + 1 && num <= indiceActuel) {
-      // Déjà vu
+    if (num <= indiceActuel) {
       btn.className = 'btn-indice vu';
-      btn.innerHTML = `<span>✓ ${ind.label} vu</span><span class="cout">${BAREME[num]} pts</span>`;
+      btn.innerHTML = '<span>&#10003; ' + ind.label + ' vu</span>'
+                    + '<span class="cout">' + BAREME[num] + ' pts</span>';
       btn.disabled = true;
     } else if (num === indiceActuel + 1) {
-      // Disponible maintenant
       btn.className = 'btn-indice disponible';
-      btn.innerHTML = `<span>🔍 ${ind.label}</span><span class="cout">${BAREME[num]} pts</span>`;
-      btn.onclick = () => voirIndice(num);
+      btn.innerHTML = '<span>&#128269; ' + ind.label + '</span>'
+                    + '<span class="cout">' + BAREME[num] + ' pts</span>';
+      (function(n) {
+        btn.onclick = function() { voirIndice(n); };
+      })(num);
     } else {
-      // Verrouillé, pas encore affiché
       btn.className = 'btn-indice verrouille';
-      btn.innerHTML = `<span>🔒 ${ind.label}</span>`;
     }
     conteneur.appendChild(btn);
   });
 }
 
-/* ── Mise à jour du score ──────────────────────────────────── */
-function retirerPoints(nb, libelle) {
+function retirerPoints(nb) {
   score = Math.max(0, score + nb);
-  historiquePoints.push({ libelle, points: nb });
-
-  const el = document.getElementById('score-valeur');
+  var el = document.getElementById('score-valeur');
   el.textContent = score;
   el.style.color = score >= 70 ? '#2ECC71' : score >= 40 ? '#F5C842' : '#E74C3C';
   el.classList.remove('score-flash');
@@ -389,23 +420,19 @@ function retirerPoints(nb, libelle) {
   el.classList.add('score-flash');
 }
 
-/* ── Voir un indice ─────────────────────────────────────────── */
 function voirIndice(numero) {
-  retirerPoints(BAREME[numero], INDICES[numero - 1].label);
+  retirerPoints(BAREME[numero]);
+  indiceActuel = numero;
 
   document.getElementById('img-indice').src = INDICES[numero - 1].src;
   document.getElementById('label-overlay-img').textContent = INDICES[numero - 1].label;
   document.getElementById('overlay-image').classList.add('visible');
-
-  indiceActuel = numero;
 }
 
-/* ── Fermer l'indice → retour accueil, mise à jour ───────────── */
 function fermerIndice() {
   document.getElementById('overlay-image').classList.remove('visible');
   construireListeIndices();
 
-  // Si les 6 indices ont été vus : débloque proverbe + solutions
   if (indiceActuel >= INDICES.length) {
     document.getElementById('texte-proverbe').textContent  = PROVERBE.texte;
     document.getElementById('source-proverbe').textContent = PROVERBE.source;
@@ -414,75 +441,76 @@ function fermerIndice() {
   }
 }
 
-/* ── Vidéo YouTube ─────────────────────────────────────────── */
 function ouvrirVideo() {
   document.getElementById('iframe-yt').src =
-    'https://www.youtube.com/embed/' + y3PD9N3GqLQ + '?autoplay=1&rel=0';
+    'https://www.youtube.com/embed/' + YOUTUBE_ID + '?autoplay=1&rel=0';
   document.getElementById('overlay-video').classList.add('visible');
 }
+
 function fermerVideo() {
   document.getElementById('iframe-yt').src = '';
   document.getElementById('overlay-video').classList.remove('visible');
 }
-
-/* ── Solution AR (caméra + marqueur + GLB) ─────────────────────
-   La scène A-Frame/MindAR n'est créée qu'ici, au moment du clic.
-   Elle est entièrement détruite au retour : évite tout conflit
-   avec le reste de la page et libère bien la caméra.          */
-let sceneArEl = null;
 
 function ouvrirAR() {
   document.getElementById('ecran-ar').classList.add('visible');
   document.getElementById('ar-chargement').classList.add('visible');
   document.getElementById('ar-scan-hint').style.display = 'none';
 
-  const conteneur = document.getElementById('ar-scene-conteneur');
+  var conteneur = document.getElementById('ar-scene-conteneur');
   conteneur.innerHTML =
-    '<a-scene id="scene-ar" ' +
-      'mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiLoading: no; uiError: no; uiScanning: no;" ' +
-      'color-space="sRGB" ' +
-      'renderer="colorManagement: true; physicallyCorrectLights: true;" ' +
-      'vr-mode-ui="enabled: false" ' +
-      'device-orientation-permission-ui="enabled: false" ' +
-      'style="width:100%;height:100%;position:fixed;top:0;left:0;">' +
-      '<a-assets><a-asset-item id="glb-solution" src="models/solution.glb"></a-asset-item></a-assets>' +
-      '<a-camera position="0 0 0" look-controls="enabled: false"></a-camera>' +
-      '<a-entity id="ar-target" mindar-image-target="targetIndex: 0">' +
-        '<a-gltf-model src="#glb-solution" position="0 0.05 0" rotation="-90 0 0" scale="0.12 0.12 0.12"></a-gltf-model>' +
-        '<a-light type="ambient" color="#ffffff" intensity="0.7"></a-light>' +
-        '<a-light type="directional" color="#ffffff" intensity="0.9" position="1 2 1"></a-light>' +
-      '</a-entity>' +
+    '<a-scene id="scene-ar"' +
+    ' mindar-image="imageTargetSrc: targets.mind; autoStart: true;' +
+    ' uiLoading: no; uiError: no; uiScanning: no;"' +
+    ' color-space="sRGB"' +
+    ' renderer="colorManagement: true; physicallyCorrectLights: true;"' +
+    ' vr-mode-ui="enabled: false"' +
+    ' device-orientation-permission-ui="enabled: false">' +
+    '<a-assets>' +
+      '<a-asset-item id="glb-sol" src="models/solution.glb"></a-asset-item>' +
+    '</a-assets>' +
+    '<a-camera position="0 0 0" look-controls="enabled: false"></a-camera>' +
+    '<a-entity mindar-image-target="targetIndex: 0">' +
+      '<a-gltf-model src="#glb-sol"' +
+        ' position="0 0.05 0" rotation="-90 0 0" scale="0.12 0.12 0.12">' +
+      '</a-gltf-model>' +
+      '<a-light type="ambient" color="#ffffff" intensity="0.7"></a-light>' +
+      '<a-light type="directional" color="#ffffff"' +
+        ' intensity="0.9" position="1 2 1"></a-light>' +
+    '</a-entity>' +
     '</a-scene>';
 
-  sceneArEl = conteneur.querySelector('a-scene');
+  sceneArEl = document.getElementById('scene-ar');
 
-  sceneArEl.addEventListener('arReady', () => {
+  sceneArEl.addEventListener('arReady', function() {
     document.getElementById('ar-chargement').classList.remove('visible');
     document.getElementById('ar-scan-hint').style.display = 'block';
   }, { once: true });
 
-  sceneArEl.addEventListener('targetFound', () => {
+  sceneArEl.addEventListener('targetFound', function() {
     document.getElementById('ar-scan-hint').style.display = 'none';
   });
-  sceneArEl.addEventListener('targetLost', () => {
+  sceneArEl.addEventListener('targetLost', function() {
     document.getElementById('ar-scan-hint').style.display = 'block';
   });
 
-  // Sécurité : cache le chargement après 15s si arReady ne se déclenche pas
-  setTimeout(() => document.getElementById('ar-chargement').classList.remove('visible'), 15000);
+  setTimeout(function() {
+    document.getElementById('ar-chargement').classList.remove('visible');
+  }, 15000);
 }
 
 function fermerAR() {
-  // Détruit complètement la scène : libère la caméra proprement
-  const conteneur = document.getElementById('ar-scene-conteneur');
+  var conteneur = document.getElementById('ar-scene-conteneur');
   conteneur.innerHTML = '';
   sceneArEl = null;
-
   document.getElementById('ecran-ar').classList.remove('visible');
   document.getElementById('ar-chargement').classList.remove('visible');
+  /* Rétablit le scroll de l'accueil qu'A-Frame bloque */
+  document.body.style.overflow = 'auto';
+  document.documentElement.style.overflow = 'auto';
 }
 
-/* ── Initialisation ────────────────────────────────────────── */
+/* Init */
 construireListeIndices();
 
 </script>
