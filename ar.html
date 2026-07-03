@@ -4,31 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>AR</title>
+<title>AR Solution</title>
 
 <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
 <style>
-body{margin:0;overflow:hidden;}
-#back{
-  position:fixed;
-  top:10px;
-  left:10px;
-  z-index:10;
-  padding:10px;
+body { margin: 0; overflow: hidden; }
+#btn {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
+  padding: 10px;
 }
 </style>
 </head>
 
 <body>
 
-<button id="back" onclick="location.href='index.html'">← Retour</button>
+<button id="btn" onclick="location.href='index.html'">← Retour</button>
 
 <a-scene
-mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiScanning: yes; uiLoading: yes;"
+mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiScanning: true;"
 embedded
-vr-mode-ui="enabled:false">
+vr-mode-ui="enabled:false"
+device-orientation-permission-ui="enabled:false">
 
 <a-assets>
   <a-asset-item id="model" src="solution.glb"></a-asset-item>
