@@ -1,337 +1,60 @@
-```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jeu d'Équilibre</title>
 
-<title>Jeu d'équilibre</title>
-
-<style>
-
-body{
-    margin:0;
-    font-family:Arial, Helvetica, sans-serif;
-    background:#ececec;
-    text-align:center;
-}
-
-header{
-    background:#1f4e79;
-    color:white;
-    padding:20px;
-}
-
-main{
-    max-width:900px;
-    margin:auto;
-    padding:20px;
-}
-
-#presentation{
-    background:white;
-    border-radius:12px;
-    padding:20px;
-    box-shadow:0 0 15px rgba(0,0,0,.2);
-}
-
-button{
-
-    width:260px;
-    padding:18px;
-    margin:10px;
-
-    font-size:20px;
-
-    border:none;
-    border-radius:12px;
-
-    background:#2d89ef;
-    color:white;
-
-    cursor:pointer;
-
-    transition:.3s;
-}
-
-button:hover{
-    background:#1b5fa8;
-}
-
-button:disabled{
-    background:gray;
-    cursor:default;
-}
-
-#photo{
-    display:none;
-}
-
-#photo img{
-
-    max-width:95%;
-    max-height:80vh;
-
-    border-radius:15px;
-
-    box-shadow:0 0 25px black;
-}
-
-#retour{
-
-    margin-top:25px;
-
-}
-
-#fin{
-
-    display:none;
-
-    margin-top:30px;
-
-    background:white;
-
-    padding:20px;
-
-    border-radius:15px;
-
-    box-shadow:0 0 15px rgba(0,0,0,.3);
-
-}
-
-#proverbe{
-
-    font-size:24px;
-
-    font-style:italic;
-
-    color:#004b8d;
-
-    margin-bottom:25px;
-
-}
-
-</style>
-
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <header>
-
-<h1>Le Jeu d'Équilibre</h1>
-
+  <h1>🪙 Jeu d'Équilibre</h1>
 </header>
 
 <main>
 
-<div id="presentation">
+<section id="home">
+  <h2>Bienvenue</h2>
 
-<h2>Bienvenue</h2>
+  <p>
+    Le but est de réussir une construction en équilibre.
+  </p>
 
-<p>
+  <p>
+    Si tu bloques, débloque les indices un par un.
+  </p>
 
-Le but du jeu est de réaliser une construction en équilibre en utilisant les pièces fournies.
+  <div id="buttons"></div>
 
-</p>
+  <div id="end" class="hidden">
+    <h2>🎉 Bravo !</h2>
 
-<p>
+    <p class="quote">
+      « Ce n'est pas parce que c'est difficile que nous n’osons pas,  
+      c’est parce que nous n’osons pas que c’est difficile. »
+    </p>
 
-Si tu bloques, utilise les indices un par un.
+    <button onclick="openVideo()">🎬 Solution vidéo</button>
+    <button onclick="openAR()">📱 Solution 3D AR</button>
+  </div>
+</section>
 
-Chaque indice révèle une nouvelle photographie.
-
-Bonne réflexion !
-
-</p>
-
-<div id="boutonsIndices"></div>
-
-<div id="fin">
-
-<div id="proverbe">
-
-"Ce n'est pas parce qu'une chose est difficile que nous n'osons pas, c'est parce que nous n'osons pas qu'elle est difficile."
-
-</div>
-
-<button onclick="ouvrirVideo()">
-
-🎬 Solution en vidéo
-
-</button>
-
-<br>
-
-<button onclick="ouvrirAR()">
-
-📱 Solution en 3D AR
-
-</button>
-
-</div>
-
-</div>
-
-
-
-<div id="photo">
-
-<h2 id="titreIndice"></h2>
-
-<img id="imageIndice" src="">
-
-<br>
-
-<button id="retour" onclick="retourAccueil()">
-
-Retour à l'accueil
-
-</button>
-
-</div>
+<section id="imageView" class="hidden">
+  <h2 id="title"></h2>
+  <img id="img" src="">
+  <br>
+  <button onclick="back()">← Retour</button>
+</section>
 
 </main>
 
-<script>
-
-let indiceActuel=Number(localStorage.getItem("indiceActuel")) || 1;
-
-const maxIndice=6;
-
-function construireAccueil(){
-
-document.getElementById("presentation").style.display="block";
-document.getElementById("photo").style.display="none";
-
-let zone=document.getElementById("boutonsIndices");
-
-zone.innerHTML="";
-
-for(let i=1;i<=maxIndice;i++){
-
-let bouton=document.createElement("button");
-
-bouton.innerHTML="Indice n°"+i;
-
-if(i<indiceActuel){
-
-bouton.disabled=true;
-
-}
-
-else if(i==indiceActuel){
-
-bouton.onclick=function(){
-
-ouvrirIndice(i);
-
-};
-
-}
-
-else{
-
-bouton.style.display="none";
-
-}
-
-zone.appendChild(bouton);
-
-}
-
-if(indiceActuel>maxIndice){
-
-document.getElementById("fin").style.display="block";
-
-}else{
-
-document.getElementById("fin").style.display="none";
-
-}
-
-}
-
-function ouvrirIndice(numero){
-
-```html
-function retourAccueil(){
-
-    // Passe à l'indice suivant
-    if(indiceActuel <= maxIndice){
-        indiceActuel++;
-        localStorage.setItem("indiceActuel", indiceActuel);
-    }
-
-    construireAccueil();
-
-}
-
-function ouvrirVideo(){
-
-    // Remplace l'adresse ci-dessous par celle de ta vidéo YouTube
-    window.open(
-        "https://www.youtube.com/watch?v=XXXXXXXXXXX",
-        "_blank"
-    );
-
-}
-
-function ouvrirAR(){
-
-    window.location.href="ar.html";
-
-}
-
-// Permet de recommencer le jeu
-function reinitialiser(){
-
-    if(confirm("Recommencer le jeu ?")){
-
-        localStorage.removeItem("indiceActuel");
-        indiceActuel=1;
-        construireAccueil();
-
-    }
-
-}
-
-// Construction de la page au démarrage
-construireAccueil();
-
-</script>
-
-<footer style="margin-top:40px;padding:20px;color:#666;">
-
-<hr>
-
-<p>
-Jeu d'équilibre
-</p>
-
-<p>
-
-<button onclick="reinitialiser()">
-🔄 Recommencer les indices
-</button>
-
-</p>
-
+<footer>
+  <button onclick="resetGame()">🔄 Recommencer</button>
 </footer>
 
+<script src="script.js"></script>
 </body>
-
 </html>
-```
-  
-document.getElementById("presentation").style.display="none";
-
-document.getElementById("photo").style.display="block";
-
-document.getElementById("titreIndice").innerHTML="Indice n°"+numero;
-
-document.getElementById("imageIndice").src="Indice"+numero+".jpg";
-
-}
-```
