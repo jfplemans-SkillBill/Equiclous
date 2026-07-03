@@ -59,7 +59,7 @@ function back(){
 }
 
 function openVideo(){
-  window.open("https://www.youtube.com/watch?v=XXXXXXXXXXX","_blank");
+  window.open("https://www.youtube.com/watch?v=y3PD9N3GqLQ","_blank");
 }
 
 function openAR(){
