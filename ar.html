@@ -1,115 +1,51 @@
-```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Solution 3D</title>
+<title>AR Solution</title>
 
 <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
 <style>
-
-body{
-    margin:0;
-    overflow:hidden;
-    font-family:Arial,Helvetica,sans-serif;
+body{margin:0;overflow:hidden;}
+#back{
+  position:fixed;
+  top:10px;
+  left:10px;
+  z-index:10;
+  padding:10px;
+  background:#000;
+  color:white;
+  border:none;
 }
-
-#retour{
-    position:fixed;
-    top:15px;
-    left:15px;
-    z-index:999;
-    padding:12px 20px;
-    border:none;
-    border-radius:10px;
-    background:#1565c0;
-    color:white;
-    font-size:18px;
-    cursor:pointer;
-}
-
-#info{
-    position:fixed;
-    bottom:20px;
-    width:100%;
-    text-align:center;
-    color:white;
-    font-size:20px;
-    text-shadow:2px 2px 4px black;
-    z-index:999;
-}
-
 </style>
-
 </head>
 
 <body>
 
-<button id="retour" onclick="window.location='index.html'">
-← Retour
-</button>
-
-<div id="info">
-Présente le marqueur devant la caméra...
-</div>
+<button id="back" onclick="window.location='index.html'">← Retour</button>
 
 <a-scene
-
-mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiScanning: true; uiLoading: yes;"
-
+mindar-image="imageTargetSrc: targets.mind;"
 embedded
-
-color-space="sRGB"
-
-renderer="colorManagement:true, physicallyCorrectLights"
-
-vr-mode-ui="enabled:false"
-
-device-orientation-permission-ui="enabled:false"
-
->
+vr-mode-ui="enabled:false">
 
 <a-assets>
-
-<a-asset-item
-id="modele"
-src="solution.glb">
-</a-asset-item>
-
+  <a-asset-item id="model" src="solution.glb"></a-asset-item>
 </a-assets>
 
-<a-camera
-position="0 0 0"
-look-controls="enabled:false">
-</a-camera>
+<a-camera position="0 0 0"></a-camera>
 
-<a-entity mindar-image-target="targetIndex:0">
-
-<a-gltf-model
-
-src="#modele"
-
-position="0 0 0"
-
-rotation="0 0 0"
-
-scale="0.30 0.30 0.30"
-
-animation-mixer
-
->
-
-</a-gltf-model>
-
+<a-entity mindar-image-target="targetIndex: 0">
+  <a-gltf-model
+    src="#model"
+    scale="0.3 0.3 0.3">
+  </a-gltf-model>
 </a-entity>
 
 </a-scene>
 
 </body>
 </html>
-```
