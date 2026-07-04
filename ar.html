@@ -46,6 +46,18 @@ device-orientation-permission-ui="enabled:false">
 </a-entity>
 
 </a-scene>
+<script>
+document.querySelector("a-scene").addEventListener("loaded", () => {
+  console.log("Scène chargée");
+});
 
+const target = document.querySelector("[mindar-image-target]");
+target.addEventListener("targetFound", () => {
+  console.log("Marqueur détecté !");
+});
+target.addEventListener("targetLost", () => {
+  console.log("Marqueur perdu");
+});
+</script>
 </body>
 </html>
