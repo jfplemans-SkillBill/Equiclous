@@ -1,31 +1,156 @@
-<a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: true;" embedded>
-  <a-assets>
-    <a-asset-item id="model" src="solution.glb"></a-asset-item>
-  </a-assets>
-  <a-camera position="0 0 0"></a-camera>
-  <a-entity mindar-image-target="targetIndex: 0">
-    <!-- Cube rouge pour vérifier la détection -->
-    <a-box color="red" scale="0.1 0.1 0.1" position="0 0 -0.5"></a-box>
-    <!-- Modèle 3D -->
-    <a-entity
-      id="myModel"
-      gltf-model="#model"
-      scale="10 10 10"
-      position="0 10 -10"
-      visible="true">
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Solution 3D AR</title>
+
+  <!-- Librairies A-Frame + MindAR -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    #btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+      padding: 12px 20px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #status {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: white;
+      font-size: 18px;
+      text-shadow: 2px 2px 4px black;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      z-index: 1000;
+    }
+    #error {
+      position: fixed;
+      top: 50%;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: red;
+      font-size: 20px;
+      font-weight: bold;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 20px;
+      z-index: 1000;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <button id="btn" onclick="location.href='index.html'">← Retour</button>
+  <div id="status">Scanne la cible...</div>
+  <div id="error"></div>
+
+  <!-- Scène AR -->
+  <a-scene
+    mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiScanning: true;"
+    embedded
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <!-- Assets (modèle 3D) -->
+    <a-assets>
+      <a-asset-item id="solutionModel" src="solution.glb"></a-asset-item>
+    </a-assets>
+
+    <!-- Caméra -->
+    <a-camera position="0 0 0"></a-camera>
+
+    <!-- Cible AR + Modèle -->
+    <a-entity mindar-image-target="targetIndex: 0">
+      <!-- Cube rouge de test (visible si la cible est détectée) -->
+      <a-box color="red" scale="0.1 0.1 0.1" position="0 0 -0.5" opacity="0.5"></a-box>
+
+      <!-- Ton modèle 3D (ajusté pour être visible) -->
+      <a-entity
+        id="myModel"
+        gltf-model="#solutionModel"
+        scale="10 10 10"
+        position="0 0 -0.5"
+        rotation="0 0 0"
+        visible="true">
+      </a-entity>
     </a-entity>
-  </a-entity>
-</a-scene>
+  </a-scene>
 
-<script>
-  const model = document.getElementById("myModel");
-  model.addEventListener("model-loaded", () => {
-    console.log("✅ Modèle GLB chargé avec succès !");
-    alert("Modèle chargé ! Vérifie la console pour plus de détails.");
-  });
+  <script>
+    const status = document.getElementById("status");
+    const error = document.getElementById("error");
+    const model = document.getElementById("myModel");
+    const target = document.querySelector("[mindar-image-target]");
 
-  const target = document.querySelector("[mindar-image-target]");
-  target.addEventListener("targetFound", () => {
-    console.log("Cible détectée ! Position du modèle :", model.object3D.position);
-  });
-</script>
+    // 1. Vérification du chargement de la scène
+    document.querySelector("a-scene").addEventListener("loaded", () => {
+      status.textContent = "Scène chargée. Scanne la cible...";
+      console.log("✅ Scène A-Frame chargée");
+    });
+
+    // 2. Vérification du chargement de MindAR
+    document.querySelector("a-scene").addEventListener("arReady", () => {
+      status.textContent = "MindAR prêt. Scanne la cible...";
+      console.log("✅ MindAR prêt");
+    });
+
+    // 3. Vérification du chargement du modèle GLB
+    model.addEventListener("model-loaded", () => {
+      status.textContent = "Modèle chargé ! Scanne la cible.";
+      console.log("✅ Modèle GLB chargé avec succès");
+      error.style.display = "none";
+    });
+
+    // 4. Gestion des erreurs de chargement
+    model.addEventListener("error", (e) => {
+      error.textContent = "❌ Erreur modèle GLB: " + e.detail.message;
+      error.style.display = "block";
+      console.error("Erreur modèle:", e);
+    });
+
+    // 5. Détection de la cible
+    target.addEventListener("targetFound", () => {
+      status.textContent = "✅ Cible détectée !";
+      status.style.background = "rgba(0, 255, 0, 0.5)";
+      console.log("Cible détectée ! Position modèle:", model.object3D.position);
+    });
+
+    target.addEventListener("targetLost", () => {
+      status.textContent = "❌ Cible perdue. Re-scanne...";
+      status.style.background = "rgba(255, 0, 0, 0.5)";
+      console.log("Cible perdue");
+    });
+
+    // 6. Vérification manuelle des fichiers
+    fetch("targets.mind")
+      .catch(() => {
+        error.textContent = "❌ Fichier targets.mind introuvable !";
+        error.style.display = "block";
+      });
+
+    fetch("solution.glb")
+      .catch(() => {
+        error.textContent = "❌ Fichier solution.glb introuvable !";
+        error.style.display = "block";
+      });
+  </script>
+</body>
+</html>
