@@ -1,63 +1,109 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AR Solution</title>
 
-<title>AR Solution</title>
+  <!-- Chargement des librairies -->
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
-<style>
-body { margin: 0; overflow: hidden; }
-#btn {
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  z-index: 10;
-  padding: 10px;
-}
-</style>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    #btn { position: fixed; top: 10px; left: 10px; z-index: 10; padding: 10px; }
+    #error { position: fixed; bottom: 20px; left: 0; right: 0; text-align: center; color: red; font-weight: bold; z-index: 10; }
+  </style>
 </head>
-
 <body>
+  <button id="btn" onclick="location.href='index.html'">← Retour</button>
+  <div id="error"></div>
 
-<button id="btn" onclick="location.href='index.html'">← Retour</button>
+  <a-scene
+    mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiScanning: true;"
+    embedded
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
 
-<a-scene
-mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiScanning: true;"
-embedded
-vr-mode-ui="enabled:false"
-device-orientation-permission-ui="enabled:false">
+    <!-- Déclaration du modèle GLB -->
+    <a-assets>
+      <a-asset-item id="solutionModel" src="solution.glb"></a-asset-item>
+    </a-assets>
 
-<a-assets>
-  <a-asset-item id="model" src="solution.glb"></a-asset-item>
-</a-assets>
+    <!-- Caméra -->
+    <a-camera position="0 0 0"></a-camera>
 
-<a-camera position="0 0 0"></a-camera>
+    <!-- Cible AR + Modèle 3D -->
+    <a-entity mindar-image-target="targetIndex: 0">
+      <a-entity
+        gltf-model="#solutionModel"
+        scale="0.1 0.1 0.1"
+        position="0 0 0"
+        rotation="0 0 0">
+      </a-entity>
+    </a-entity>
+  </a-scene>
 
-<a-entity mindar-image-target="targetIndex: 0">
-<a-box color="red"
-       depth="0.1"
-       height="0.1"
-       width="0.1">
-</a-box>
-</a-entity>
+  <script>
+    const sceneEl = document.querySelector("a-scene");
+    const errorEl = document.getElementById("error");
+    const target = document.querySelector("[mindar-image-target]");
 
-</a-scene>
-<script>
-document.querySelector("a-scene").addEventListener("loaded", () => {
-  console.log("Scène chargée");
-});
+    // Vérification du chargement de la scène
+    sceneEl.addEventListener("loaded", () => {
+      console.log("Scène A-Frame chargée");
+    });
 
-const target = document.querySelector("[mindar-image-target]");
-target.addEventListener("targetFound", () => {
-  console.log("Marqueur détecté !");
-});
-target.addEventListener("targetLost", () => {
-  console.log("Marqueur perdu");
-});
-</script>
+    // Vérification du chargement de MindAR
+    sceneEl.addEventListener("arReady", () => {
+      console.log("MindAR prêt !");
+    });
+
+    // Gestion des erreurs de chargement des assets
+    sceneEl.addEventListener("assetloaded", (e) => {
+      if (e.detail.assetEl.id === "solutionModel") {
+        console.log("Modèle GLB chargé avec succès !");
+      }
+    });
+
+    // Événements de détection de la cible
+    target.addEventListener("targetFound", () => {
+      console.log("Cible détectée !");
+      errorEl.textContent = "";
+    });
+
+    target.addEventListener("targetLost", () => {
+      console.log("Cible perdue");
+    });
+
+    // Gestion des erreurs
+    window.addEventListener("error", (e) => {
+      errorEl.textContent = "Erreur : " + e.message;
+      console.error("Erreur globale :", e);
+    });
+
+    // Vérification manuelle des fichiers (pour débogage)
+    fetch("targets.mind")
+      .then(response => {
+        if (!response.ok) throw new Error("Fichier targets.mind introuvable (404)");
+        return response.blob();
+      })
+      .then(blob => console.log("targets.mind chargé :", blob.size + " octets"))
+      .catch(err => {
+        errorEl.textContent = "Erreur : " + err.message;
+        console.error(err);
+      });
+
+    fetch("solution.glb")
+      .then(response => {
+        if (!response.ok) throw new Error("Fichier solution.glb introuvable (404)");
+        return response.blob();
+      })
+      .then(blob => console.log("solution.glb chargé :", blob.size + " octets"))
+      .catch(err => {
+        errorEl.textContent = "Erreur : " + err.message;
+        console.error(err);
+      });
+  </script>
 </body>
 </html>
