@@ -5,25 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AR Solution</title>
 
-  <!-- Ordre CRUCIAL : MindAR AVANT A-Frame -->
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-
   <style>
     body {
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: transparent !important;
-      touch-action: none; /* Désactive le scroll qui bloque la caméra */
+      background: #000;
+      touch-action: none;
     }
-    a-scene {
-      position: fixed !important;
-      top: 0 !important;
-      left: 0 !important;
-      width: 100vw !important;
-      height: 100vh !important;
-      display: block !important;
+    #ar-container {
+      display: none; /* Masque la scène tant que la caméra n'est pas autorisée */
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
     }
     #btn {
       position: fixed;
@@ -46,7 +42,6 @@
       background: rgba(0,0,0,0.7);
       padding: 10px;
       z-index: 9999;
-      font-size: 14px;
     }
     #camera-permission {
       position: fixed;
@@ -54,7 +49,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.95);
       color: white;
       display: flex;
       justify-content: center;
@@ -74,95 +69,108 @@
       border-radius: 5px;
       font-size: 16px;
     }
+    a-scene {
+      width: 100% !important;
+      height: 100% !important;
+      display: block !important;
+    }
   </style>
 </head>
 <body>
   <button id="btn" onclick="location.href='index.html'">← Retour</button>
-  <div id="status">Demande d'accès caméra en cours...</div>
+  <div id="status">Autorise l'accès à la caméra...</div>
 
-  <!-- Pop-up pour demander l'autorisation caméra -->
+  <!-- Pop-up de permission (toujours visible au début) -->
   <div id="camera-permission">
-    <p>⚠️ Autorise l'accès à la caméra pour voir la réalité augmentée.</p>
-    <button onclick="requestCameraPermission()">Autoriser la caméra</button>
+    <p>⚠️ Pour voir la réalité augmentée,<br>autorise l'accès à la caméra.</p>
+    <button onclick="initAR()">Autoriser et démarrer</button>
   </div>
 
-  <!-- Scène AR -->
-  <a-scene
-    id="arScene"
-    mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiScanning: true;"
-    embedded
-    arjs="sourceType: webcam; detectionMode: mono; trackingMethod: best;"
-    render="fps: 60"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: true">
+  <!-- Conteneur de la scène AR (masqué au début) -->
+  <div id="ar-container">
+    <a-scene
+      id="arScene"
+      mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiScanning: true;"
+      embedded
+      arjs="sourceType: webcam; detectionMode: mono; trackingMethod: best;"
+      render="fps: 60"
+      vr-mode-ui="enabled: false">
 
-    <a-assets>
-      <a-asset-item id="solutionModel" src="solution.glb"></a-asset-item>
-    </a-assets>
+      <a-assets>
+        <a-asset-item id="solutionModel" src="solution.glb"></a-asset-item>
+      </a-assets>
 
-    <a-camera position="0 0 0" fov="60" near="0.1" far="1000"></a-camera>
+      <a-camera position="0 0 0" fov="60" near="0.1" far="1000"></a-camera>
 
-    <a-entity mindar-image-target="targetIndex: 0">
-      <a-box color="red" scale="0.1 0.1 0.1" position="0 0 -0.5" opacity="0.5"></a-box>
-      <a-entity
-        gltf-model="#solutionModel"
-        scale="1 1 1"  <!-- Réduit de moitié (ton modèle était 2x trop grand) -->
-        position="0 0 -10"
-        rotation="0 0 0">
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-box color="red" scale="0.1 0.1 0.1" position="0 0 -0.5" opacity="0.5"></a-box>
+        <a-entity
+          gltf-model="#solutionModel"
+          scale="0.5 0.5 0.5"
+          position="0 0 -0.3"
+          rotation="0 0 0">
+        </a-entity>
       </a-entity>
-    </a-entity>
-  </a-scene>
+    </a-scene>
+  </div>
+
+  <!-- Chargement des scripts APRES le HTML pour éviter les conflits -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
   <script>
     const status = document.getElementById("status");
-    const arScene = document.getElementById("arScene");
+    const arContainer = document.getElementById("ar-container");
     const cameraPermission = document.getElementById("camera-permission");
+    const arScene = document.getElementById("arScene");
     const target = document.querySelector("[mindar-image-target]");
 
-    // 1. Demande explicite de permission caméra
-    function requestCameraPermission() {
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-          .then(() => {
-            cameraPermission.style.display = "none";
-            status.textContent = "Caméra activée. Scanne la cible...";
-            arScene.setAttribute("mindar-image", "autoStart", "true");
-            console.log("✅ Accès caméra accordé");
-          })
-          .catch(err => {
-            status.textContent = "❌ Erreur caméra: " + err.message;
-            console.error("Erreur caméra:", err);
-          });
-      } else {
-        status.textContent = "❌ Navigateur non compatible avec la caméra";
+    // Fonction pour initialiser l'AR après autorisation
+    async function initAR() {
+      try {
+        // 1. Demande l'accès à la caméra
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" }
+        });
+
+        // 2. Masque le pop-up et affiche la scène
+        cameraPermission.style.display = "none";
+        arContainer.style.display = "block";
+        status.textContent = "Scanne la cible...";
+
+        // 3. Démarre MindAR
+        arScene.setAttribute("mindar-image", "autoStart", "true");
+
+        // 4. Gestion des événements
+        arScene.addEventListener("loaded", () => {
+          console.log("✅ Scène chargée");
+        });
+
+        target.addEventListener("targetFound", () => {
+          status.textContent = "✅ Cible détectée !";
+          status.style.background = "rgba(0, 255, 0, 0.7)";
+          console.log("Cible détectée !");
+        });
+
+        target.addEventListener("targetLost", () => {
+          status.textContent = "❌ Cible perdue";
+          status.style.background = "rgba(255, 0, 0, 0.7)";
+          console.log("Cible perdue");
+        });
+
+      } catch (err) {
+        status.textContent = "❌ Erreur: " + err.message;
+        console.error("Erreur caméra:", err);
+        // Réaffiche le bouton en cas d'erreur
+        cameraPermission.style.display = "flex";
       }
     }
 
-    // 2. Vérification du chargement de la scène
-    arScene.addEventListener("loaded", () => {
-      status.textContent = "Scène chargée. Autorise la caméra...";
-      console.log("✅ Scène chargée");
-    });
-
-    // 3. Détection de la cible
-    target.addEventListener("targetFound", () => {
-      status.textContent = "✅ Cible détectée !";
-      status.style.background = "rgba(0, 255, 0, 0.7)";
-      console.log("Cible détectée !");
-    });
-
-    target.addEventListener("targetLost", () => {
-      status.textContent = "❌ Cible perdue";
-      status.style.background = "rgba(255, 0, 0, 0.7)";
-      console.log("Cible perdue");
-    });
-
-    // 4. Démarre automatiquement si la permission est déjà accordée
+    // Vérifie si la permission est déjà accordée
     if (navigator.permissions) {
       navigator.permissions.query({ name: "camera" }).then(result => {
         if (result.state === "granted") {
-          cameraPermission.style.display = "none";
-          arScene.setAttribute("mindar-image", "autoStart", "true");
+          initAR(); // Démarre automatiquement si déjà autorisé
         }
       });
     }
