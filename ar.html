@@ -2,67 +2,73 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AR Solution - Débogage</title>
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>AR Solution</title>
+
+  <!-- Ordre important : MindAR DOIT être chargé AVANT A-Frame -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
   <style>
     body { margin: 0; overflow: hidden; }
-    #btn { position: fixed; top: 20px; left: 20px; z-index: 1000; padding: 10px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 5px; }
-    #debug { position: fixed; bottom: 20px; left: 0; right: 0; color: white; text-align: center; background: rgba(0,0,0,0.7); padding: 10px; z-index: 1000; font-family: monospace; font-size: 12px; }
+    #btn { position: fixed; top: 20px; left: 20px; z-index: 9999; padding: 10px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 5px; }
+    #status { position: fixed; bottom: 20px; left: 0; right: 0; text-align: center; color: white; background: rgba(0,0,0,0.7); padding: 10px; z-index: 9999; }
   </style>
 </head>
 <body>
   <button id="btn" onclick="location.href='index.html'">← Retour</button>
-  <div id="debug">Chargement...</div>
+  <div id="status">Scanne la cible...</div>
 
-  <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: true;" embedded>
+  <a-scene
+    mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiScanning: true;"
+    embedded
+    arjs="trackingMethod: best;"
+    render="fps: 60"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: true">
+
     <a-assets>
-      <a-asset-item id="solutionModel" src="Duck.glb"></a-asset-item>
+      <a-asset-item id="solutionModel" src="solution.glb"></a-asset-item>
     </a-assets>
-    <a-camera position="0 0 0"></a-camera>
 
+    <!-- Caméra avec paramètres optimisés pour mobile -->
+    <a-camera position="0 0 0" fov="60" near="0.1" far="1000"></a-camera>
+
+    <!-- Cible AR + Modèle -->
     <a-entity mindar-image-target="targetIndex: 0">
       <!-- Cube rouge pour vérifier la détection -->
       <a-box color="red" scale="0.1 0.1 0.1" position="0 0 -0.5" opacity="0.5"></a-box>
 
-      <!-- Ton modèle avec débogage -->
+      <!-- Ton modèle (échelle ajustée pour 0.46 ft ≈ 0.14 m) -->
       <a-entity
-        id="myModel"
         gltf-model="#solutionModel"
-        scale="1 1 1"
-        position="0 0 -0.5"
-        rotation="0 0 0"
-        visible="true">
+        scale="1 1 1"  <!-- 1:1 car ton modèle fait déjà 0.46 ft (14 cm) -->
+        position="0 0 -0.3"  <!-- Plus proche de la caméra -->
+        rotation="0 0 0">
       </a-entity>
     </a-entity>
   </a-scene>
 
   <script>
-    const debug = document.getElementById("debug");
-    const model = document.getElementById("myModel");
+    const status = document.getElementById("status");
     const target = document.querySelector("[mindar-image-target]");
 
-    // Affiche les infos du modèle une fois chargé
-    model.addEventListener("model-loaded", () => {
-      const box = new THREE.Box3().setFromObject(model.object3D);
-      const size = box.getSize(new THREE.Vector3());
-      debug.innerHTML = `
-        ✅ Modèle chargé<br>
-        Taille: ${size.x.toFixed(2)}m x ${size.y.toFixed(2)}m x ${size.z.toFixed(2)}m<br>
-        Position: ${model.object3D.position.x}, ${model.object3D.position.y}, ${model.object3D.position.z}<br>
-        Échelle: ${model.object3D.scale.x}, ${model.object3D.scale.y}, ${model.object3D.scale.z}
-      `;
-      console.log("Modèle chargé. Taille:", size);
+    // Vérification du chargement
+    document.querySelector("a-scene").addEventListener("loaded", () => {
+      status.textContent = "Scène chargée. Scanne la cible...";
+      console.log("✅ Scène chargée");
     });
 
     // Détection de la cible
     target.addEventListener("targetFound", () => {
-      debug.innerHTML += "<br>✅ Cible détectée !";
-      console.log("Cible détectée");
+      status.textContent = "✅ Cible détectée ! Modèle visible ?";
+      status.style.background = "rgba(0, 255, 0, 0.7)";
+      console.log("Cible détectée !");
     });
+
     target.addEventListener("targetLost", () => {
-      debug.innerHTML += "<br>❌ Cible perdue";
+      status.textContent = "❌ Cible perdue";
+      status.style.background = "rgba(255, 0, 0, 0.7)";
       console.log("Cible perdue");
     });
   </script>
