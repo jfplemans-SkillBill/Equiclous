@@ -1,40 +1,31 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test Détection Cible</title>
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-  <style>
-    body { margin: 0; overflow: hidden; }
-    #status { position: fixed; top: 50%; left: 0; right: 0; text-align: center; font-size: 24px; color: white; text-shadow: 2px 2px 4px black; }
-  </style>
-</head>
-<body>
-  <div id="status">Scanne la cible...</div>
-  <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: true;" embedded>
-    <a-camera position="0 0 0"></a-camera>
-    <a-entity mindar-image-target="targetIndex: 0">
-      <a-box color="red" scale="1 1 1" position="0 0 -0.5"></a-box>
+<a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: true;" embedded>
+  <a-assets>
+    <a-asset-item id="model" src="solution.glb"></a-asset-item>
+  </a-assets>
+  <a-camera position="0 0 0"></a-camera>
+  <a-entity mindar-image-target="targetIndex: 0">
+    <!-- Cube rouge pour vérifier la détection -->
+    <a-box color="red" scale="0.1 0.1 0.1" position="0 0 -0.5"></a-box>
+    <!-- Modèle 3D -->
+    <a-entity
+      id="myModel"
+      gltf-model="#model"
+      scale="1 1 1"
+      position="0 0 -0.5"
+      visible="true">
     </a-entity>
-  </a-scene>
+  </a-entity>
+</a-scene>
 
-  <script>
-    const status = document.getElementById("status");
-    const target = document.querySelector("[mindar-image-target]");
+<script>
+  const model = document.getElementById("myModel");
+  model.addEventListener("model-loaded", () => {
+    console.log("✅ Modèle GLB chargé avec succès !");
+    alert("Modèle chargé ! Vérifie la console pour plus de détails.");
+  });
 
-    target.addEventListener("targetFound", () => {
-      status.textContent = "✅ CIBLE DÉTECTÉE !";
-      status.style.backgroundColor = "rgba(0, 255, 0, 0.5)";
-      console.log("Cible trouvée !");
-    });
-
-    target.addEventListener("targetLost", () => {
-      status.textContent = "❌ Cible perdue";
-      status.style.backgroundColor = "rgba(255, 0, 0, 0.5)";
-      console.log("Cible perdue");
-    });
-  </script>
-</body>
-</html>
+  const target = document.querySelector("[mindar-image-target]");
+  target.addEventListener("targetFound", () => {
+    console.log("Cible détectée ! Position du modèle :", model.object3D.position);
+  });
+</script>
