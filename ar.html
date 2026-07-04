@@ -5,24 +5,57 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AR Solution</title>
 
-  <!-- Ordre important : MindAR DOIT être chargé AVANT A-Frame -->
+  <!-- Ordre CRUCIAL : MindAR AVANT A-Frame -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
   <style>
-    body { margin: 0; overflow: hidden; }
-    #btn { position: fixed; top: 20px; left: 20px; z-index: 9999; padding: 10px; background: rgba(0,0,0,0.7); color: white; border: none; border-radius: 5px; }
-    #status { position: fixed; bottom: 20px; left: 0; right: 0; text-align: center; color: white; background: rgba(0,0,0,0.7); padding: 10px; z-index: 9999; }
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: transparent !important;
+    }
+    a-scene {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    #btn {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 9999;
+      padding: 10px;
+      background: rgba(0,0,0,0.7);
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    #status {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      color: white;
+      background: rgba(0,0,0,0.7);
+      padding: 10px;
+      z-index: 9999;
+    }
   </style>
 </head>
 <body>
   <button id="btn" onclick="location.href='index.html'">← Retour</button>
   <div id="status">Scanne la cible...</div>
 
+  <!-- Scène AR avec paramètres corrigés -->
   <a-scene
     mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiScanning: true;"
     embedded
-    arjs="trackingMethod: best;"
+    arjs="sourceType: webcam; detectionMode: mono; trackingMethod: best;"
     render="fps: 60"
     vr-mode-ui="enabled: false"
     device-orientation-permission-ui="enabled: true">
@@ -31,7 +64,7 @@
       <a-asset-item id="solutionModel" src="solution.glb"></a-asset-item>
     </a-assets>
 
-    <!-- Caméra avec paramètres optimisés pour mobile -->
+    <!-- Caméra avec fond transparent pour voir le flux vidéo -->
     <a-camera position="0 0 0" fov="60" near="0.1" far="1000"></a-camera>
 
     <!-- Cible AR + Modèle -->
@@ -39,11 +72,11 @@
       <!-- Cube rouge pour vérifier la détection -->
       <a-box color="red" scale="0.1 0.1 0.1" position="0 0 -0.5" opacity="0.5"></a-box>
 
-      <!-- Ton modèle (échelle ajustée pour 0.46 ft ≈ 0.14 m) -->
+      <!-- Ton modèle (14 cm) -->
       <a-entity
         gltf-model="#solutionModel"
-        scale="1 1 1"  <!-- 1:1 car ton modèle fait déjà 0.46 ft (14 cm) -->
-        position="0 0 -0.3"  <!-- Plus proche de la caméra -->
+        scale="1 1 1"
+        position="0 0 -0.3"
         rotation="0 0 0">
       </a-entity>
     </a-entity>
@@ -51,17 +84,27 @@
 
   <script>
     const status = document.getElementById("status");
+    const scene = document.querySelector("a-scene");
     const target = document.querySelector("[mindar-image-target]");
 
+    // Force le redimensionnement de la scène
+    window.addEventListener("resize", () => {
+      scene.resize();
+    });
+
     // Vérification du chargement
-    document.querySelector("a-scene").addEventListener("loaded", () => {
+    scene.addEventListener("loaded", () => {
       status.textContent = "Scène chargée. Scanne la cible...";
       console.log("✅ Scène chargée");
+      // Force le démarrage de la caméra
+      if (scene.components["mindar-image"]) {
+        scene.components["mindar-image"].start();
+      }
     });
 
     // Détection de la cible
     target.addEventListener("targetFound", () => {
-      status.textContent = "✅ Cible détectée ! Modèle visible ?";
+      status.textContent = "✅ Cible détectée !";
       status.style.background = "rgba(0, 255, 0, 0.7)";
       console.log("Cible détectée !");
     });
