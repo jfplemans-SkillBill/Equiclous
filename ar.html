@@ -125,8 +125,8 @@
         <a-box color="red" scale="0.1 0.1 0.1" position="0 0 -0.5" opacity="0.5"></a-box>
         <a-entity
           gltf-model="#solutionModel"
-          scale="0.2 0.2 0.2"
-          position="0 0 -0.8"
+          scale="0.5 0.5 0.5"
+          position="0 0 -0.3"
           rotation="0 0 0">
         </a-entity>
       </a-entity>
@@ -178,4 +178,42 @@
           imageTargetSrc: "targets.mind",
           autoStart: true,
           uiScanning: false, // Désactive l'UI de scanning de MindAR (on gère nous-mêmes)
-          video: video // P
+          video: video // Passe notre élément vidéo à MindAR
+        });
+
+        // 6. Gestion des événements
+        arScene.addEventListener("loaded", () => {
+          console.log("✅ Scène chargée");
+        });
+
+        target.addEventListener("targetFound", () => {
+          status.textContent = "✅ Cible détectée !";
+          status.style.background = "rgba(0, 255, 0, 0.7)";
+          console.log("Cible détectée !");
+        });
+
+        target.addEventListener("targetLost", () => {
+          status.textContent = "❌ Cible perdue";
+          status.style.background = "rgba(255, 0, 0, 0.7)";
+          console.log("Cible perdue");
+        });
+
+      } catch (err) {
+        status.textContent = "❌ Erreur: " + err.message;
+        console.error("Erreur caméra:", err);
+        // Réaffiche le bouton en cas d'erreur
+        cameraPermission.style.display = "flex";
+      }
+    }
+
+    // Vérifie si la permission est déjà accordée
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: "camera" }).then(result => {
+        if (result.state === "granted") {
+          initAR(); // Démarre automatiquement si déjà autorisé
+        }
+      });
+    }
+  </script>
+</body>
+</html>
