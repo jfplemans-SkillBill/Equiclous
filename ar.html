@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AR Solution</title>
 
-  <!-- Librairies -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
@@ -17,7 +16,6 @@
       background: #000;
       touch-action: none;
     }
-    /* Flux vidéo en arrière-plan */
     #video-bg {
       position: fixed;
       top: 0;
@@ -26,10 +24,9 @@
       height: 100vh;
       z-index: -1;
       object-fit: cover;
-      transform: scaleX(-1);
+      transform: scaleX(-1); /* CORRIGE LE MIROIR */
       display: none;
     }
-    /* Scène AR */
     a-scene {
       position: fixed !important;
       top: 0 !important;
@@ -39,7 +36,6 @@
       background: transparent !important;
       display: none !important;
     }
-    /* Overlay de démarrage */
     #overlay {
       position: fixed;
       top: 0;
@@ -64,7 +60,6 @@
       border: none;
       border-radius: 5px;
       font-size: 18px;
-      cursor: pointer;
     }
     #status {
       position: fixed;
@@ -77,18 +72,31 @@
       padding: 10px;
       z-index: 9999;
     }
+    #debug {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,0.8);
+      color: lime;
+      font-family: monospace;
+      font-size: 10px;
+      padding: 5px;
+      z-index: 9999;
+      max-width: 90%;
+      max-height: 30%;
+      overflow: auto;
+    }
   </style>
 </head>
 <body>
   <div id="status">Appuyez sur le bouton pour démarrer</div>
+  <div id="debug"></div>
 
-  <!-- ÉLÉMENT VIDÉO (flux caméra) -->
   <video id="video-bg" autoplay playsinline muted></video>
 
-  <!-- SCÈNE AR (MindAR) -->
   <a-scene
     id="ar-scene"
-    mindar-image="imageTargetSrc: targets.mind; autoStart: false; showVideo: true;"
+    mindar-image="imageTargetSrc: targets.mind; autoStart: false;"
     embedded
     vr-mode-ui="enabled: false">
     <a-assets>
@@ -96,82 +104,127 @@
     </a-assets>
     <a-camera position="0 0 0" fov="60" near="0.1" far="1000"></a-camera>
     <a-entity mindar-image-target="targetIndex: 0">
-      <a-box color="red" scale="0.1 0.1 0.1" position="0 0 -0.5" opacity="0.5"></a-box>
-      <a-entity gltf-model="#solutionModel" scale="0.5 0.5 0.5" position="0 0 -0.3"></a-entity>
+      <!-- Cube ROUGE GEANT pour vérifier la détection -->
+      <a-box color="red" scale="2 2 0.1" position="0 0 -0.5" opacity="0.7"></a-box>
+      <a-entity
+        id="myModel"
+        gltf-model="#solutionModel"
+        scale="0.5 0.5 0.5"
+        position="0 0 -0.3">
+      </a-entity>
     </a-entity>
   </a-scene>
 
-  <!-- BOUTON DE DÉMARRAGE -->
   <div id="overlay">
     <h2>📷 Activer la caméra</h2>
     <p>Appuyez sur le bouton pour autoriser l'accès à la caméra.</p>
     <button id="start-btn">🚀 DÉMARRER LA CAMÉRA</button>
   </div>
 
-  <!-- JAVASCRIPT INTÉGRÉ ICI -->
   <script>
-    // Récupération des éléments
     const videoBg = document.getElementById('video-bg');
     const arScene = document.getElementById('ar-scene');
     const overlay = document.getElementById('overlay');
     const startBtn = document.getElementById('start-btn');
     const status = document.getElementById('status');
+    const debug = document.getElementById('debug');
+    const myModel = document.getElementById('myModel');
 
     let stream = null;
+    let mindarController = null;
 
-    // Fonction appelée quand on clique sur le bouton
+    function log(msg) {
+      debug.textContent += msg + "\n";
+      debug.scrollTop = debug.scrollHeight;
+      console.log(msg);
+    }
+
     startBtn.onclick = async function() {
       try {
-        // 1. Message de statut
+        debug.textContent = "";
         status.textContent = "Demande d'accès à la caméra...";
 
-        // 2. Demande l'accès à la caméra ARRIÈRE
+        // 1. Demande la caméra
         stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: "environment",  // Caméra arrière
+            facingMode: "environment",
             width: { ideal: 1280 },
             height: { ideal: 720 }
           },
           audio: false
         });
+        log("✅ Accès caméra accordé");
 
-        // 3. Affiche le flux vidéo
+        // 2. Affiche le flux vidéo (AVEC miroir)
         videoBg.srcObject = stream;
         await videoBg.play();
         videoBg.style.display = 'block';
+        log("✅ Flux vidéo démarré");
 
-        // 4. Masque l'overlay et affiche la scène AR
+        // 3. Masque l'overlay
         overlay.style.display = 'none';
         arScene.style.display = 'block';
         status.textContent = "Scanne la cible...";
 
-        // 5. Démarre MindAR avec notre flux vidéo
+        // 4. Vérifie que targets.mind existe
+        try {
+          const response = await fetch('targets.mind');
+          if (!response.ok) throw new Error("Fichier introuvable");
+          const blob = await response.blob();
+          log(`✅ targets.mind chargé (${blob.size} octets)`);
+        } catch (err) {
+          log(`❌ ERREUR: ${err.message}`);
+          status.textContent = "❌ Fichier targets.mind manquant !";
+          return;
+        }
+
+        // 5. Vérifie que solution.glb existe
+        try {
+          const response = await fetch('solution.glb');
+          if (!response.ok) throw new Error("Fichier introuvable");
+          const blob = await response.blob();
+          log(`✅ solution.glb chargé (${blob.size} octets)`);
+        } catch (err) {
+          log(`❌ ERREUR: ${err.message}`);
+          status.textContent = "❌ Fichier solution.glb manquant !";
+          return;
+        }
+
+        // 6. Démarre MindAR
         arScene.setAttribute('mindar-image', {
           imageTargetSrc: 'targets.mind',
           autoStart: true,
-          showVideo: true,  // Force l'affichage du flux
-          video: videoBg    // Utilise notre élément vidéo
+          showVideo: false,
+          video: videoBg
         });
+        log("✅ MindAR démarré");
 
-        // 6. Écoute les événements de détection
+        // 7. Écoute les événements
         const target = arScene.querySelector('[mindar-image-target]');
         target.addEventListener('targetFound', () => {
-          status.textContent = "✅ Cible détectée !";
-          status.style.background = "rgba(0, 255, 0, 0.5)";
+          status.textContent = "✅ CIBLE DÉTECTÉE !";
+          status.style.background = "rgba(0, 255, 0, 0.7)";
+          log("✅ Cible détectée !");
         });
         target.addEventListener('targetLost', () => {
           status.textContent = "❌ Cible perdue";
-          status.style.background = "rgba(255, 0, 0, 0.5)";
+          status.style.background = "rgba(255, 0, 0, 0.7)";
+          log("❌ Cible perdue");
+        });
+
+        // 8. Vérifie que le modèle est chargé
+        myModel.addEventListener('model-loaded', () => {
+          log("✅ Modèle 3D chargé et prêt !");
         });
 
       } catch (err) {
-        // Gestion des erreurs
         console.error("Erreur:", err);
+        log(`❌ ERREUR: ${err.name}: ${err.message}`);
         status.textContent = "❌ Erreur: " + err.message;
         if (err.name === 'NotAllowedError') {
-          status.textContent += " → Autorisez la caméra dans les paramètres.";
+          status.textContent += " → Autorisez la caméra !";
         }
-        startBtn.style.display = 'block'; // Réaffiche le bouton
+        startBtn.style.display = 'block';
       }
     };
 
@@ -179,7 +232,7 @@
     if (navigator.permissions) {
       navigator.permissions.query({ name: 'camera' }).then(result => {
         if (result.state === 'granted') {
-          startBtn.click(); // Démarre automatiquement
+          startBtn.click();
         }
       });
     }
