@@ -3,29 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AR Solution</title>
+  <title>AR Solution - Version G</title>
 
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
   <style>
-    body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background: #000;
-      touch-action: none;
-    }
-    #video-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: -1;
-      object-fit: cover;
-      display: none;
-    }
+    body { margin: 0; padding: 0; overflow: hidden; background: #000; touch-action: none; }
     a-scene {
       position: fixed !important;
       top: 0 !important;
@@ -33,71 +17,39 @@
       width: 100vw !important;
       height: 100vh !important;
       background: transparent !important;
-      display: none !important;
     }
     #overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.9);
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      z-index: 10000;
-      text-align: center;
-      padding: 20px;
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.9); color: white;
+      display: flex; justify-content: center; align-items: center;
+      flex-direction: column; z-index: 10000; text-align: center; padding: 20px;
     }
     #overlay button {
-      margin-top: 20px;
-      padding: 15px 30px;
-      background: #4285F4;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 18px;
+      margin-top: 20px; padding: 15px 30px;
+      background: #4285F4; color: white; border: none;
+      border-radius: 5px; font-size: 18px;
     }
     #status {
-      position: fixed;
-      bottom: 20px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      color: white;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 10px;
-      z-index: 9999;
+      position: fixed; bottom: 20px; left: 0; right: 0;
+      text-align: center; color: white;
+      background: rgba(0,0,0,0.7); padding: 10px; z-index: 9999;
     }
     #debug {
-      position: fixed;
-      top: 10px;
-      left: 10px;
-      background: rgba(0,0,0,0.8);
-      color: lime;
-      font-family: monospace;
-      font-size: 10px;
-      padding: 5px;
-      z-index: 9999;
-      max-width: 90%;
-      max-height: 30%;
-      overflow: auto;
+      position: fixed; top: 10px; left: 10px;
+      background: rgba(0,0,0,0.8); color: lime;
+      font-family: monospace; font-size: 10px;
+      padding: 5px; z-index: 9999;
+      max-width: 90%; max-height: 30%; overflow: auto;
     }
   </style>
 </head>
 <body>
-  <div id="status">Appuyez sur le bouton pour démarrer</div>
-  <div id="debug"></div>
+  <div id="status">Version G - Appuyez pour démarrer</div>
+  <div id="debug">[G] Initialisation...</div>
 
-  <!-- Flux vidéo (SANS miroir) -->
-  <video id="video-bg" autoplay playsinline muted></video>
-
-  <!-- Scène AR -->
   <a-scene
     id="ar-scene"
-    mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiScanning: true;"
+    mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiScanning: true;"
     embedded
     vr-mode-ui="enabled: false">
     <a-assets>
@@ -105,118 +57,90 @@
     </a-assets>
     <a-camera position="0 0 0" fov="60" near="0.1" far="1000"></a-camera>
     <a-entity mindar-image-target="targetIndex: 0">
-      <!-- Cube ROUGE TRÈS GRAND -->
       <a-box color="red" scale="5 5 0.1" position="0 0 -0.5" opacity="0.9"></a-box>
-      <a-entity
-        id="myModel"
-        gltf-model="#solutionModel"
-        scale="0.5 0.5 0.5"
-        position="0 0 -0.3">
-      </a-entity>
+      <a-entity id="myModel" gltf-model="#solutionModel" scale="0.5 0.5 0.5" position="0 0 -0.3"></a-entity>
     </a-entity>
   </a-scene>
 
   <div id="overlay">
-    <h2>📷 Activer la caméra</h2>
-    <p>Appuyez sur le bouton pour autoriser l'accès à la caméra.</p>
-    <button id="start-btn">🚀 DÉMARRER LA CAMÉRA</button>
+    <h2>📷 Version G - Activer la caméra</h2>
+    <p>Appuyez sur le bouton pour démarrer.</p>
+    <button id="start-btn">🚀 DÉMARRER (Version G)</button>
   </div>
 
   <script>
-    const videoBg = document.getElementById('video-bg');
+    const debug = document.getElementById('debug');
+    const status = document.getElementById('status');
     const arScene = document.getElementById('ar-scene');
     const overlay = document.getElementById('overlay');
     const startBtn = document.getElementById('start-btn');
-    const status = document.getElementById('status');
-    const debug = document.getElementById('debug');
     const myModel = document.getElementById('myModel');
 
-    let stream = null;
-
     function log(msg) {
-      debug.textContent += msg + "\n";
+      debug.textContent += `[G] ${msg}\n`;
       debug.scrollTop = debug.scrollHeight;
-      console.log(msg);
+      console.log(`[G] ${msg}`);
     }
 
     startBtn.onclick = async function() {
       try {
-        debug.textContent = "";
-        status.textContent = "Demande d'accès à la caméra...";
+        log("Démarrage de la caméra...");
+        status.textContent = "Version G - Accès caméra...";
 
-        // 1. Demande la caméra ARRIÈRE
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment", width: 1280, height: 720 },
           audio: false
         });
-        log("✅ Accès caméra accordé");
+        log("✅ Caméra activée");
 
-        // 2. Affiche le flux vidéo (SANS miroir)
-        videoBg.srcObject = stream;
-        await videoBg.play();
-        videoBg.style.display = 'block';
-        log("✅ Flux vidéo démarré");
+        // Vérifie les fichiers
+        const [targetsOk, modelOk] = await Promise.all([
+          fetch('targets.mind').then(r => r.ok).catch(() => false),
+          fetch('solution.glb').then(r => r.ok).catch(() => false)
+        ]);
 
-        // 3. Masque l'overlay
-        overlay.style.display = 'none';
-        arScene.style.display = 'block';
-        status.textContent = "Scanne la cible...";
-
-        // 4. Vérifie que targets.mind existe
-        try {
-          const response = await fetch('targets.mind');
-          if (!response.ok) throw new Error("Fichier introuvable (404)");
-          const blob = await response.blob();
-          log(`✅ targets.mind chargé (${blob.size} octets)`);
-        } catch (err) {
-          log(`❌ ERREUR: ${err.message}`);
-          status.textContent = "❌ Fichier targets.mind MANQUANT !";
+        if (!targetsOk) {
+          log("❌ ERREUR: targets.mind MANQUANT ou inaccessible");
+          status.textContent = "❌ targets.mind introuvable !";
           return;
         }
+        if (!modelOk) {
+          log("❌ ERREUR: solution.glb MANQUANT ou inaccessible");
+          status.textContent = "❌ solution.glb introuvable !";
+          return;
+        }
+        log("✅ Fichiers vérifiés: targets.mind + solution.glb");
 
-        // 5. Démarre MindAR AVEC le flux vidéo direct
-        arScene.setAttribute('mindar-image', {
-          imageTargetSrc: 'targets.mind',
-          autoStart: true,
-          uiScanning: true,  // Affiche l'UI de scanning de MindAR
-          showVideo: false
-        });
-        log("✅ MindAR démarré");
+        overlay.style.display = 'none';
+        arScene.style.display = 'block';
+        status.textContent = "Version G - Scanne la cible...";
 
-        // 6. Écoute les événements
+        // Écoute les événements
         const target = arScene.querySelector('[mindar-image-target]');
         target.addEventListener('targetFound', () => {
-          status.textContent = "✅ CIBLE DÉTECTÉE !";
-          status.style.background = "rgba(0, 255, 0, 0.7)";
-          log("✅ Cible détectée !");
+          log("✅ CIBLE DÉTECTÉE !");
+          status.textContent = "Version G - Cible trouvée !";
+          status.style.background = "rgba(0,255,0,0.5)";
         });
         target.addEventListener('targetLost', () => {
-          status.textContent = "❌ Cible perdue";
-          status.style.background = "rgba(255, 0, 0, 0.5)";
           log("❌ Cible perdue");
+          status.style.background = "rgba(255,0,0,0.5)";
         });
 
-        // 7. Vérifie que le modèle est chargé
         myModel.addEventListener('model-loaded', () => {
-          log("✅ Modèle 3D chargé !");
+          log("✅ Modèle 3D chargé");
         });
 
       } catch (err) {
-        console.error("Erreur:", err);
         log(`❌ ERREUR: ${err.name}: ${err.message}`);
-        status.textContent = "❌ Erreur: " + err.message;
+        status.textContent = `Version G - Erreur: ${err.message}`;
         if (err.name === 'NotAllowedError') {
-          status.textContent += " → Autorisez la caméra !";
+          status.textContent += " → Autorise la caméra !";
         }
-        startBtn.style.display = 'block';
       }
     };
 
-    // Vérifie si la permission est déjà accordée
+    // Vérifie les permissions au chargement
     if (navigator.permissions) {
       navigator.permissions.query({ name: 'camera' }).then(result => {
         if (result.state === 'granted') startBtn.click();
