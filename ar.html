@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>AR Solution</title>
 
+  <!-- Librairies -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
   <style>
     body {
       margin: 0;
@@ -13,6 +17,7 @@
       background: #000;
       touch-action: none;
     }
+    /* Flux vidéo en arrière-plan */
     #video-bg {
       position: fixed;
       top: 0;
@@ -24,14 +29,17 @@
       transform: scaleX(-1);
       display: none;
     }
-    #ar-scene {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      display: none;
+    /* Scène AR */
+    a-scene {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      background: transparent !important;
+      display: none !important;
     }
+    /* Overlay de démarrage */
     #overlay {
       position: fixed;
       top: 0;
@@ -69,21 +77,18 @@
       padding: 10px;
       z-index: 9999;
     }
-    .chrome-warning {
-      color: #FFD700;
-      margin-top: 15px;
-      font-size: 14px;
-    }
   </style>
 </head>
 <body>
   <div id="status">Appuyez sur le bouton pour démarrer</div>
 
+  <!-- ÉLÉMENT VIDÉO (flux caméra) -->
   <video id="video-bg" autoplay playsinline muted></video>
 
+  <!-- SCÈNE AR (MindAR) -->
   <a-scene
     id="ar-scene"
-    mindar-image="imageTargetSrc: targets.mind; autoStart: false;"
+    mindar-image="imageTargetSrc: targets.mind; autoStart: false; showVideo: true;"
     embedded
     vr-mode-ui="enabled: false">
     <a-assets>
@@ -96,71 +101,59 @@
     </a-entity>
   </a-scene>
 
+  <!-- BOUTON DE DÉMARRAGE -->
   <div id="overlay">
     <h2>📷 Activer la caméra</h2>
     <p>Appuyez sur le bouton pour autoriser l'accès à la caméra.</p>
-    <div class="chrome-warning" id="chrome-warning"></div>
     <button id="start-btn">🚀 DÉMARRER LA CAMÉRA</button>
   </div>
 
-  <script src="https://unpkg.com/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-
+  <!-- JAVASCRIPT INTÉGRÉ ICI -->
   <script>
+    // Récupération des éléments
     const videoBg = document.getElementById('video-bg');
     const arScene = document.getElementById('ar-scene');
     const overlay = document.getElementById('overlay');
     const startBtn = document.getElementById('start-btn');
     const status = document.getElementById('status');
-    const chromeWarning = document.getElementById('chrome-warning');
-
-    // Détecter si c'est Chrome
-    const isChrome = /Chrome/.test(navigator.userAgent);
-    if (isChrome) {
-      chromeWarning.textContent = "⚠️ Sur Chrome: Après avoir cliqué, autorisez la caméra dans la pop-up en haut de l'écran.";
-    }
 
     let stream = null;
 
+    // Fonction appelée quand on clique sur le bouton
     startBtn.onclick = async function() {
       try {
+        // 1. Message de statut
         status.textContent = "Demande d'accès à la caméra...";
 
-        // Configuration optimisée pour Chrome
-        const constraints = {
+        // 2. Demande l'accès à la caméra ARRIÈRE
+        stream = await navigator.mediaDevices.getUserMedia({
           video: {
-            facingMode: "environment",
+            facingMode: "environment",  // Caméra arrière
             width: { ideal: 1280 },
-            height: { ideal: 720 },
-            frameRate: { ideal: 30 }
+            height: { ideal: 720 }
           },
           audio: false
-        };
-
-        // Demander l'accès
-        stream = await navigator.mediaDevices.getUserMedia(constraints);
-
-        // Afficher le flux vidéo
-        videoBg.srcObject = stream;
-        await videoBg.play().catch(e => {
-          console.error("Erreur lecture vidéo:", e);
-          throw new Error("Impossible de lire le flux vidéo: " + e.message);
         });
+
+        // 3. Affiche le flux vidéo
+        videoBg.srcObject = stream;
+        await videoBg.play();
         videoBg.style.display = 'block';
 
-        // Masquer l'overlay et afficher la scène
+        // 4. Masque l'overlay et affiche la scène AR
         overlay.style.display = 'none';
         arScene.style.display = 'block';
         status.textContent = "Scanne la cible...";
 
-        // Démarrer MindAR
+        // 5. Démarre MindAR avec notre flux vidéo
         arScene.setAttribute('mindar-image', {
           imageTargetSrc: 'targets.mind',
           autoStart: true,
-          video: videoBg
+          showVideo: true,  // Force l'affichage du flux
+          video: videoBg    // Utilise notre élément vidéo
         });
 
-        // Écouter les événements
+        // 6. Écoute les événements de détection
         const target = arScene.querySelector('[mindar-image-target]');
         target.addEventListener('targetFound', () => {
           status.textContent = "✅ Cible détectée !";
@@ -172,30 +165,21 @@
         });
 
       } catch (err) {
+        // Gestion des erreurs
         console.error("Erreur:", err);
         status.textContent = "❌ Erreur: " + err.message;
-
         if (err.name === 'NotAllowedError') {
           status.textContent += " → Autorisez la caméra dans les paramètres.";
-          chromeWarning.textContent = "⚠️ Vérifiez que Chrome a l'autorisation caméra (Paramètres → Applications → Chrome → Permissions).";
-        } else if (err.name === 'NotFoundError') {
-          status.textContent += " → Caméra non trouvée.";
-        } else if (err.name === 'NotReadableError') {
-          status.textContent += " → La caméra est déjà utilisée par une autre application.";
         }
-
-        // Réafficher le bouton
-        startBtn.style.display = 'block';
+        startBtn.style.display = 'block'; // Réaffiche le bouton
       }
     };
 
-    // Vérifier si la permission est déjà accordée
+    // Vérifie si la permission est déjà accordée
     if (navigator.permissions) {
       navigator.permissions.query({ name: 'camera' }).then(result => {
         if (result.state === 'granted') {
-          startBtn.click();
-        } else if (result.state === 'denied') {
-          chromeWarning.textContent = "⚠️ L'accès à la caméra a été refusé. Réactivez-le dans les paramètres.";
+          startBtn.click(); // Démarre automatiquement
         }
       });
     }
