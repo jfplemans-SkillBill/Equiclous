@@ -3,9 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AR Solution - Version P</title>
+  <title>AR Solution - Version Q</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
+  <!-- Version plus récente d'A-Frame -->
+  <script src="https://aframe.io/releases/1.4.5/aframe.min.js"></script>
+
   <style>
     body {
       margin: 0;
@@ -13,18 +15,13 @@
       overflow: hidden;
       background: #000;
     }
-    #canvas-container {
+    a-scene {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      z-index: 1;
-    }
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
+      background: rgba(0, 0, 255, 0.3);
     }
     #overlay {
       position: fixed;
@@ -79,93 +76,66 @@
   </style>
 </head>
 <body>
-  <div id="status">Version P - Test Three.js...</div>
-  <div id="debug">[P] Démarrage...</div>
+  <div id="status">Version Q - Test A-Frame minimal</div>
+  <div id="debug">[Q] Démarrage...</div>
 
-  <div id="canvas-container"></div>
+  <!-- Scène A-Frame ultra-simple -->
+  <a-scene id="ar-scene">
+    <a-camera position="0 0 0"></a-camera>
+    <a-box color="red" scale="5 5 5" position="0 0 -2" opacity="1"></a-box>
+    <a-light type="ambient" color="#FFF"></a-light>
+  </a-scene>
 
   <div id="overlay">
-    <h2>🎯 Version P - Test Three.js pur</h2>
+    <h2>🎯 Version Q - A-Frame minimal</h2>
     <p>Appuyez pour afficher le cube.</p>
-    <button id="start-btn">🚀 AFFICHER LE CUBE (Version P)</button>
+    <button id="start-btn">🚀 AFFICHER (Version Q)</button>
   </div>
 
   <script>
-    const container = document.getElementById('canvas-container');
+    const arScene = document.getElementById('ar-scene');
     const overlay = document.getElementById('overlay');
     const startBtn = document.getElementById('start-btn');
     const status = document.getElementById('status');
     const debug = document.getElementById('debug');
 
-    let scene, camera, renderer, cube;
-
     function log(msg) {
-      debug.textContent += `[P] ${msg}\n`;
+      debug.textContent += `[Q] ${msg}\n`;
       debug.scrollTop = debug.scrollHeight;
-      console.log(`[P] ${msg}`);
+      console.log(`[Q] ${msg}`);
     }
 
-    function initThreeJS() {
-      try {
-        // 1. Crée la scène
-        scene = new THREE.Scene();
-        log("✅ Scène Three.js créée");
-
-        // 2. Crée la caméra
-        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.z = 5;
-        log("✅ Caméra créée");
-
-        // 3. Crée le renderer
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        renderer.setClearColor(0x000000, 0); // Fond transparent
-        container.appendChild(renderer.domElement);
-        log("✅ Renderer créé");
-
-        // 4. Crée un cube rouge
-        const geometry = new THREE.BoxGeometry(2, 2, 2);
-        const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        cube = new THREE.Mesh(geometry, material);
-        scene.add(cube);
-        log("✅ Cube rouge créé");
-
-        // 5. Animation
-        function animate() {
-          requestAnimationFrame(animate);
-          cube.rotation.x += 0.01;
-          cube.rotation.y += 0.01;
-          renderer.render(scene, camera);
-        }
-        animate();
-        log("✅ Animation démarrée");
-
-        // 6. Redimensionnement
-        window.addEventListener('resize', () => {
-          camera.aspect = window.innerWidth / window.innerHeight;
-          camera.updateProjectionMatrix();
-          renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        return true;
-      } catch (err) {
-        log(`❌ Erreur Three.js: ${err.message}`);
+    // Vérifie que A-Frame est chargé
+    function checkAFrame() {
+      if (typeof AFRAME === 'undefined') {
+        log("❌ A-Frame NON CHARGÉ !");
+        status.textContent = "❌ A-Frame non chargé !";
         return false;
       }
+      log("✅ A-Frame chargé (version " + AFRAME.version + ")");
+      return true;
     }
 
     startBtn.onclick = function() {
       overlay.style.display = 'none';
-      status.textContent = "Version P - Cube rouge devrait tourner...";
+      status.textContent = "Version Q - Cube devrait être visible...";
 
-      if (initThreeJS()) {
-        log("✅ Three.js initialisé avec succès");
-      } else {
-        status.textContent = "❌ Échec Three.js !";
+      if (checkAFrame()) {
+        // Vérifie la scène après 1 seconde
+        setTimeout(() => {
+          const box = arScene.querySelector('a-box');
+          log(`Cube existe: ${box ? 'OUI' : 'NON'}`);
+          if (box) {
+            log(`Position: ${box.getAttribute('position')}`);
+            log(`Scale: ${box.getAttribute('scale')}`);
+            log(`Color: ${box.getAttribute('color')}`);
+            log(`Opacity: ${box.getAttribute('opacity')}`);
+          }
+        }, 1000);
       }
     };
 
-    // Vérifie WebGL au chargement
+    // Vérifie WebGL et A-Frame au chargement
     try {
       const canvas = document.createElement('canvas');
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -175,9 +145,10 @@
         log("❌ WebGL NON SUPPORTÉ");
         status.textContent = "❌ WebGL non supporté !";
       }
+      checkAFrame();
     } catch (e) {
-      log(`❌ Erreur WebGL: ${e.message}`);
-      status.textContent = `❌ Erreur WebGL: ${e.message}`;
+      log(`❌ Erreur: ${e.message}`);
+      status.textContent = `❌ Erreur: ${e.message}`;
     }
   </script>
 </body>
