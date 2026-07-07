@@ -3,72 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AR Solution FINALE</title>
-
-  <!-- CDN fiables et testés -->
+  <title>AR FINAL</title>
   <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
-
   <style>
     body { margin: 0; padding: 0; overflow: hidden; background: #000; }
-    a-scene {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: transparent;
-    }
-    #video-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: -1;
-      object-fit: cover;
-      display: none;
-    }
+    a-scene { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; }
     #status {
-      position: fixed;
-      bottom: 20px;
-      left: 0;
-      right: 0;
-      text-align: center;
-      color: white;
-      background: rgba(0,0,0,0.7);
-      padding: 10px;
-      z-index: 9999;
+      position: fixed; bottom: 20px; left: 0; right: 0;
+      text-align: center; color: white;
+      background: rgba(0,0,0,0.7); padding: 10px; z-index: 9999;
     }
   </style>
 </head>
 <body>
-  <div id="status">Scanne la cible...</div>
-  <video id="video-bg" autoplay playsinline muted></video>
+  <div id="status">Initialisation...</div>
 
-  <a-scene
-    mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiScanning: true; showVideo: true;"
-    embedded
-    vr-mode-ui="enabled: false">
+  <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: true; uiScanning: true; showVideo: true;" embedded>
     <a-assets>
       <a-asset-item id="solutionModel" src="solution.glb"></a-asset-item>
     </a-assets>
     <a-camera position="0 0 0"></a-camera>
+
+    <!-- CUBE ROUGE TOUJOURS VISIBLE (pour test) -->
+    <a-box color="red" scale="1 1 0.1" position="0 0 -1"></a-box>
+
+    <!-- Cible avec modèle (apparaît à la détection) -->
     <a-entity mindar-image-target="targetIndex: 0">
-      <a-box color="red" scale="0.3 0.3 0.1" position="0 0 -0.5"></a-box>
+      <a-box color="blue" scale="0.3 0.3 0.1" position="0 0 -0.5"></a-box>
       <a-entity gltf-model="#solutionModel" scale="0.5 0.5 0.5" position="0 0 -0.3"></a-entity>
     </a-entity>
   </a-scene>
 
   <script>
-    // Active la caméra automatiquement
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
-      .then(stream => {
-        document.getElementById('video-bg').srcObject = stream;
-      })
-      .catch(err => {
-        document.getElementById('status').textContent = "Autorise la caméra !";
-      });
+    // Vérifie que les fichiers existent
+    fetch('targets.mind').catch(() => {
+      document.getElementById('status').textContent = "❌ targets.mind MANQUANT";
+    });
+    fetch('solution.glb').catch(() => {
+      document.getElementById('status').textContent = "❌ solution.glb MANQUANT";
+    });
   </script>
 </body>
 </html>
