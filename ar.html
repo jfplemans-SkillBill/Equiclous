@@ -3,12 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AR Solution - Version R</title>
+  <title>AR Solution - Version S</title>
 
-  <!-- CDN alternatif 1: unpkg -->
-  <script src="https://unpkg.com/aframe@1.4.5/dist/aframe.min.js" onerror="
-    document.write('<script src=\"https://cdn.jsdelivr.net/npm/aframe@1.4.5/dist/aframe.min.js\" onerror=\"document.getElementById(\\'debug\\').innerText += \\'[R] ❌ Les 2 CDN A-Frame ont échoué !\\\\n\\\';\"><\\/script>');
-  "></script>
+  <!-- A-Frame chargé en LOCAL (fichier dans le même dossier) -->
+  <script src="aframe.min.js"></script>
 
   <style>
     body {
@@ -23,7 +21,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0, 0, 255, 0.3);
+      background: rgba(0, 0, 255, 0.3); /* Fond bleu transparent */
     }
     #overlay {
       position: fixed;
@@ -78,19 +76,20 @@
   </style>
 </head>
 <body>
-  <div id="status">Version R - Chargement A-Frame...</div>
-  <div id="debug">[R] Démarrage...</div>
+  <div id="status">Version S - A-Frame local</div>
+  <div id="debug">[S] Démarrage...</div>
 
   <a-scene id="ar-scene">
     <a-camera position="0 0 0"></a-camera>
+    <!-- Cube rouge ENORME -->
     <a-box color="red" scale="5 5 5" position="0 0 -2" opacity="1"></a-box>
     <a-light type="ambient" color="#FFF"></a-light>
   </a-scene>
 
   <div id="overlay">
-    <h2>🎯 Version R - A-Frame avec CDN alternatif</h2>
+    <h2>🎯 Version S - A-Frame local</h2>
     <p>Appuyez pour tester.</p>
-    <button id="start-btn">🚀 TESTER (Version R)</button>
+    <button id="start-btn">🚀 TESTER (Version S)</button>
   </div>
 
   <script>
@@ -101,15 +100,15 @@
     const debug = document.getElementById('debug');
 
     function log(msg) {
-      debug.textContent += `[R] ${msg}\n`;
+      debug.textContent += `[S] ${msg}\n`;
       debug.scrollTop = debug.scrollHeight;
-      console.log(`[R] ${msg}`);
+      console.log(`[S] ${msg}`);
     }
 
     // Vérifie que A-Frame est chargé
     function checkAFrame() {
       if (typeof AFRAME === 'undefined') {
-        log("❌ A-Frame NON CHARGÉ !");
+        log("❌ A-Frame NON CHARGÉ ! Vérifie que aframe.min.js est dans le même dossier.");
         status.textContent = "❌ A-Frame non chargé !";
         return false;
       }
@@ -119,7 +118,8 @@
 
     startBtn.onclick = function() {
       overlay.style.display = 'none';
-      status.textContent = "Version R - Cube devrait être visible...";
+      arScene.style.display = 'block';
+      status.textContent = "Version S - Cube devrait être visible...";
 
       if (checkAFrame()) {
         setTimeout(() => {
@@ -129,7 +129,7 @@
       }
     };
 
-    // Vérifie WebGL au chargement
+    // Vérifie WebGL et A-Frame au chargement
     try {
       const canvas = document.createElement('canvas');
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
