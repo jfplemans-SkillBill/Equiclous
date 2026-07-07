@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AR Solution - Version Q</title>
+  <title>AR Solution - Version R</title>
 
-  <!-- Version plus récente d'A-Frame -->
-  <script src="https://aframe.io/releases/1.4.5/aframe.min.js"></script>
+  <!-- CDN alternatif 1: unpkg -->
+  <script src="https://unpkg.com/aframe@1.4.5/dist/aframe.min.js" onerror="
+    document.write('<script src=\"https://cdn.jsdelivr.net/npm/aframe@1.4.5/dist/aframe.min.js\" onerror=\"document.getElementById(\\'debug\\').innerText += \\'[R] ❌ Les 2 CDN A-Frame ont échoué !\\\\n\\\';\"><\\/script>');
+  "></script>
 
   <style>
     body {
@@ -76,10 +78,9 @@
   </style>
 </head>
 <body>
-  <div id="status">Version Q - Test A-Frame minimal</div>
-  <div id="debug">[Q] Démarrage...</div>
+  <div id="status">Version R - Chargement A-Frame...</div>
+  <div id="debug">[R] Démarrage...</div>
 
-  <!-- Scène A-Frame ultra-simple -->
   <a-scene id="ar-scene">
     <a-camera position="0 0 0"></a-camera>
     <a-box color="red" scale="5 5 5" position="0 0 -2" opacity="1"></a-box>
@@ -87,9 +88,9 @@
   </a-scene>
 
   <div id="overlay">
-    <h2>🎯 Version Q - A-Frame minimal</h2>
-    <p>Appuyez pour afficher le cube.</p>
-    <button id="start-btn">🚀 AFFICHER (Version Q)</button>
+    <h2>🎯 Version R - A-Frame avec CDN alternatif</h2>
+    <p>Appuyez pour tester.</p>
+    <button id="start-btn">🚀 TESTER (Version R)</button>
   </div>
 
   <script>
@@ -100,9 +101,9 @@
     const debug = document.getElementById('debug');
 
     function log(msg) {
-      debug.textContent += `[Q] ${msg}\n`;
+      debug.textContent += `[R] ${msg}\n`;
       debug.scrollTop = debug.scrollHeight;
-      console.log(`[Q] ${msg}`);
+      console.log(`[R] ${msg}`);
     }
 
     // Vérifie que A-Frame est chargé
@@ -112,30 +113,23 @@
         status.textContent = "❌ A-Frame non chargé !";
         return false;
       }
-      log("✅ A-Frame chargé (version " + AFRAME.version + ")");
+      log(`✅ A-Frame chargé (version ${AFRAME.version})`);
       return true;
     }
 
     startBtn.onclick = function() {
       overlay.style.display = 'none';
-      status.textContent = "Version Q - Cube devrait être visible...";
+      status.textContent = "Version R - Cube devrait être visible...";
 
       if (checkAFrame()) {
-        // Vérifie la scène après 1 seconde
         setTimeout(() => {
           const box = arScene.querySelector('a-box');
           log(`Cube existe: ${box ? 'OUI' : 'NON'}`);
-          if (box) {
-            log(`Position: ${box.getAttribute('position')}`);
-            log(`Scale: ${box.getAttribute('scale')}`);
-            log(`Color: ${box.getAttribute('color')}`);
-            log(`Opacity: ${box.getAttribute('opacity')}`);
-          }
         }, 1000);
       }
     };
 
-    // Vérifie WebGL et A-Frame au chargement
+    // Vérifie WebGL au chargement
     try {
       const canvas = document.createElement('canvas');
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
@@ -145,11 +139,13 @@
         log("❌ WebGL NON SUPPORTÉ");
         status.textContent = "❌ WebGL non supporté !";
       }
-      checkAFrame();
     } catch (e) {
-      log(`❌ Erreur: ${e.message}`);
-      status.textContent = `❌ Erreur: ${e.message}`;
+      log(`❌ Erreur WebGL: ${e.message}`);
+      status.textContent = `❌ Erreur WebGL: ${e.message}`;
     }
+
+    // Vérifie A-Frame après 2 secondes
+    setTimeout(checkAFrame, 2000);
   </script>
 </body>
 </html>
