@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>AR Solution - Version N</title>
+  <title>AR Solution - Version O</title>
 
   <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 
@@ -14,27 +14,14 @@
       overflow: hidden;
       background: #000;
     }
-    /* Flux vidéo en arrière-plan (z-index: 0) */
-    #video-bg {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-      object-fit: cover;
-      display: none;
-    }
-    /* Scène A-Frame DEVANT le flux (z-index: 1) */
+    /* PAS DE FLUX VIDÉO */
     a-scene {
       position: fixed !important;
       top: 0 !important;
       left: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
-      background: rgba(0, 255, 0, 0.2) !important;
-      z-index: 1 !important; /* DEVANT le flux vidéo */
-      display: none !important;
+      background: rgba(0, 0, 255, 0.3) !important; /* Fond BLEU transparent */
     }
     #overlay {
       position: fixed;
@@ -89,28 +76,27 @@
   </style>
 </head>
 <body>
-  <div id="status">Version N - Test cube...</div>
-  <div id="debug">[N] Démarrage...</div>
+  <div id="status">Version O - Test A-Frame seul</div>
+  <div id="debug">[O] Démarrage...</div>
 
-  <!-- Flux vidéo -->
-  <video id="video-bg" autoplay playsinline muted></video>
-
-  <!-- Scène A-Frame avec cube TEST -->
+  <!-- Scène A-Frame SEULE (sans flux vidéo) -->
   <a-scene id="ar-scene" embedded vr-mode-ui="enabled: false">
-    <!-- Caméra à l'origine -->
+    <!-- Caméra -->
     <a-camera position="0 0 0" fov="90"></a-camera>
-    <!-- Cube ROUGE ENORME juste devant la caméra -->
-    <a-box color="red" scale="10 10 0.1" position="0 0 -0.5" opacity="1"></a-box>
+    <!-- Cube ROUGE ENORME au centre -->
+    <a-box color="red" scale="5 5 5" position="0 0 -2" opacity="1"></a-box>
+    <!-- Lumière pour mieux voir -->
+    <a-light type="ambient" color="#BBB"></a-light>
+    <a-light type="directional" intensity="0.5" position="-1 1 0"></a-light>
   </a-scene>
 
   <div id="overlay">
-    <h2>🎯 Version N - Cube test</h2>
-    <p>Appuyez pour tester.</p>
-    <button id="start-btn">🚀 TESTER (Version N)</button>
+    <h2>🎯 Version O - Test A-Frame</h2>
+    <p>Appuyez pour afficher le cube.</p>
+    <button id="start-btn">🚀 AFFICHER LE CUBE (Version O)</button>
   </div>
 
   <script>
-    const videoBg = document.getElementById('video-bg');
     const arScene = document.getElementById('ar-scene');
     const overlay = document.getElementById('overlay');
     const startBtn = document.getElementById('start-btn');
@@ -118,50 +104,41 @@
     const debug = document.getElementById('debug');
 
     function log(msg) {
-      debug.textContent += `[N] ${msg}\n`;
+      debug.textContent += `[O] ${msg}\n`;
       debug.scrollTop = debug.scrollHeight;
-      console.log(`[N] ${msg}`);
+      console.log(`[O] ${msg}`);
     }
 
-    startBtn.onclick = async function() {
-      try {
-        log("Démarrage...");
-        status.textContent = "Version N - Test en cours...";
+    startBtn.onclick = function() {
+      overlay.style.display = 'none';
+      arScene.style.display = 'block';
+      status.textContent = "Version O - Cube rouge devrait être visible...";
+      log("✅ Scène A-Frame affichée");
 
-        // Active la caméra
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment", width: 1280, height: 720 },
-          audio: false
-        });
-        log("✅ Caméra activée");
-
-        // Affiche le flux vidéo
-        videoBg.srcObject = stream;
-        await videoBg.play();
-        videoBg.style.display = 'block';
-        log("✅ Flux vidéo affiché (z-index: 0)");
-
-        // Affiche la scène A-Frame (z-index: 1)
-        overlay.style.display = 'none';
-        arScene.style.display = 'block';
-        status.textContent = "Version N - Regarde le cube...";
-
-        // Vérifie après 2 secondes
-        setTimeout(() => {
-          const box = arScene.querySelector('a-box');
-          log(`Cube existe: ${box ? 'OUI' : 'NON'}`);
-          log(`Cube position: ${box ? box.getAttribute('position') : 'N/A'}`);
-          log(`Cube scale: ${box ? box.getAttribute('scale') : 'N/A'}`);
-        }, 2000);
-
-      } catch (err) {
-        log(`❌ ERREUR: ${err.name}: ${err.message}`);
-        status.textContent = `Version N - Erreur: ${err.message}`;
-        if (err.name === 'NotAllowedError') {
-          status.textContent += " → Autorise la caméra !";
-        }
-      }
+      // Vérifie après 1 seconde
+      setTimeout(() => {
+        const box = arScene.querySelector('a-box');
+        log(`Cube existe: ${box ? 'OUI' : 'NON'}`);
+        log(`Cube position: ${box ? box.getAttribute('position') : 'N/A'}`);
+        log(`Cube scale: ${box ? box.getAttribute('scale') : 'N/A'}`);
+        log(`Cube visible: ${box ? box.getAttribute('opacity') : 'N/A'}`);
+      }, 1000);
     };
+
+    // Vérifie WebGL au chargement
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (gl) {
+        log("✅ WebGL supporté");
+      } else {
+        log("❌ WebGL NON SUPPORTÉ");
+        status.textContent = "❌ WebGL non supporté !";
+      }
+    } catch (e) {
+      log(`❌ Erreur WebGL: ${e.message}`);
+      status.textContent = `❌ Erreur WebGL: ${e.message}`;
+    }
   </script>
 </body>
 </html>
