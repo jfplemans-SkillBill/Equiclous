@@ -63,7 +63,7 @@ function openVideo(){
 }
 
 function openAR(){
-  window.location.href = "ar.html";
+  window.location.href = "mindar.html";
 }
 
 function resetGame(){
