@@ -66,6 +66,6 @@ function resetGame() {
 }
 function openMailWithDate() {
   const today = new Date().toLocaleDateString('fr-FR'); // Format : "10/07/2026"
-  window.open(`mailto:?subject=EquiClous - ${today}`);
+  window.open(`mailto:jfplemans@gmail.com?subject=EquiClous - ${today}`);
 }
 render();
