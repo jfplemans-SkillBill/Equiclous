@@ -64,5 +64,8 @@ function resetGame() {
   step = 1;
   render();
 }
-
+function openMailWithDate() {
+  const today = new Date().toLocaleDateString('fr-FR'); // Format : "10/07/2026"
+  window.open(`mailto:?subject=EquiClous - ${today}`);
+}
 render();
