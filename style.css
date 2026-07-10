@@ -80,3 +80,16 @@ button:disabled {
 footer{
   margin-top:20px;
 }
+
+.mail-link {
+  display: block;
+  margin-top: 8px;
+  color: #1f4e79;
+  text-decoration: none;
+  font-size: 12px;
+  text-align: center;
+}
+
+.mail-link:hover {
+  text-decoration: underline;
+}
