@@ -1,31 +1,82 @@
-/* Ajout pour le conteneur des boutons */
-#buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  max-width: 100%;
-  margin: 10px auto;
+body{
+  margin:0;
+  font-family:Arial;
+  background:#f2f2f2;
+  text-align:center;
 }
 
-/* Boutons redimensionnés et optimisés */
-button {
-  padding: 8px 12px;
-  margin: 0;
-  width: auto;
-  min-width: 80px;
-  border: none;
-  border-radius: 8px;
-  background: #2d89ef;
-  color: white;
-  font-size: 14px;
-  cursor: pointer;
-  box-sizing: border-box;
+header{
+  background:#1f4e79;
+  color:white;
+  padding:15px;
 }
 
-/* Boutons désactivés (grisés) */
+main{
+  padding:20px;
+}
+
+/* Boutons optimisés pour smartphone */
+button{
+  padding:8px 12px;
+  margin:5px;
+  width:auto;
+  min-width:80px;
+  border:none;
+  border-radius:8px;
+  background:#2d89ef;
+  color:white;
+  font-size:14px;
+  cursor:pointer;
+  box-sizing:border-box;
+}
+
+button:hover{
+  background:#1b5fa8;
+}
+
+/* Boutons grisés (désactivés) */
 button:disabled {
-  background: #a0a0a0;
-  cursor: not-allowed;
-  opacity: 0.7;
+  background:#a0a0a0;
+  cursor:not-allowed;
+  opacity:0.7;
+}
+
+.hidden{
+  display:none;
+}
+
+/* Conteneur des boutons : affiche TOUS les boutons sur smartphone */
+#buttons {
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  max-width:100%;
+  margin:10px auto;
+}
+
+/* Images des indices : adaptées à la largeur du smartphone */
+#imageView {
+  width: 100%;
+  padding:10px;
+  box-sizing:border-box;
+}
+
+#imageView img {
+  width:100%;
+  height:auto;
+  max-height:70vh;
+  border-radius:10px;
+  box-shadow:0 0 10px rgba(0,0,0,0.3);
+  object-fit:contain;
+}
+
+.quote{
+  font-style:italic;
+  color:#1f4e79;
+  margin:20px;
+}
+
+footer{
+  margin-top:20px;
 }
