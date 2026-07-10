@@ -9,64 +9,57 @@ const title = document.getElementById("title");
 const img = document.getElementById("img");
 const end = document.getElementById("end");
 
-// construire boutons
-function render(){
-
+// Construire les boutons (TOUS visibles, grisés au fur et à mesure)
+function render() {
   buttons.innerHTML = "";
 
-  for(let i=1;i<=max;i++){
-
+  for(let i = 1; i <= max; i++) {
     let b = document.createElement("button");
     b.textContent = "Indice " + i;
 
-    if(i < step){
-      b.disabled = true;
+    if(i < step) {
+      b.disabled = true; // Boutons précédents grisés
     }
 
-    if(i === step){
-      b.onclick = ()=>show(i);
-    }
-
-    if(i > step){
-      b.style.display = "none";
+    if(i === step) {
+      b.onclick = () => show(i); // Seul le bouton actuel est cliquable
     }
 
     buttons.appendChild(b);
   }
 
-  if(step > max){
+  // Affiche la section "Bravo" APRES le 6ème indice
+  if(step > max) {
     end.classList.remove("hidden");
   } else {
     end.classList.add("hidden");
   }
 }
 
-function show(i){
+function show(i) {
   home.classList.add("hidden");
   imgView.classList.remove("hidden");
-
   title.textContent = "Indice " + i;
   img.src = "Indice" + i + ".jpg";
 }
 
-function back(){
+function back() {
   step++;
   localStorage.setItem("step", step);
   render();
-
   imgView.classList.add("hidden");
   home.classList.remove("hidden");
 }
 
-function openVideo(){
-  window.open("https://www.youtube.com/watch?v=y3PD9N3GqLQ","_blank");
+function openVideo() {
+  window.open("https://www.youtube.com/watch?v=y3PD9N3GqLQ", "_blank");
 }
 
-function openAR(){
+function openAR() {
   window.location.href = "mindar.html";
 }
 
-function resetGame(){
+function resetGame() {
   localStorage.removeItem("step");
   step = 1;
   render();
