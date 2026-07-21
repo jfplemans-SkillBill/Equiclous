@@ -1,210 +1,65 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jeu d'Équilibre</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jeu d'Équilibre</title>
 
-  <!-- Police Google Fonts (Poppins) -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Georgia&display=swap" rel="stylesheet">
-
-  <style>
-    /* --- Réinitialisation et base --- */
-    body {
-      font-family: 'Poppins', sans-serif;
-      font-size: 16px;
-      line-height: 1.6;
-      margin: 0;
-      padding: 0;
-      color: #333;
-      background-color: #f9f9f9;
-    }
-
-    /* --- En-tête --- */
-    header {
-      text-align: center;
-      padding: 20px;
-      background-color: #fff;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    header h1 {
-      font-family: 'Georgia', serif;
-      font-size: 2.5rem;
-      margin: 0;
-      color: #2c3e50;
-    }
-
-    /* --- Contenu principal --- */
-    main {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    section {
-      padding: 20px;
-      margin: 20px 0;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    /* --- Section d'accueil --- */
-    #home h2 {
-      font-size: 1.8rem;
-      color: #2c3e50;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    #home p {
-      font-size: 1.1rem;
-      text-align: center;
-      margin: 15px 0;
-      color: #444;
-    }
-
-    /* --- Section Bravo --- */
-    #end {
-      text-align: center;
-    }
-
-    #end h2 {
-      font-size: 2rem;
-      color: #27ae60;
-    }
-
-    .quote {
-      font-family: 'Georgia', serif;
-      font-size: 1.3rem;
-      font-style: italic;
-      color: #7f8c8d;
-      margin: 20px 0;
-    }
-
-    /* --- Boutons --- */
-    button {
-      font-family: 'Poppins', sans-serif;
-      font-size: 1rem;
-      font-weight: 600;
-      padding: 10px 20px;
-      margin: 10px;
-      border: none;
-      border-radius: 5px;
-      background-color: #3498db;
-      color: white;
-      cursor: pointer;
-      transition: background-color 0.3s;
-    }
-
-    button:hover {
-      background-color: #2980b9;
-    }
-
-    #end button {
-      background-color: #27ae60;
-    }
-
-    #end button:hover {
-      background-color: #219653;
-    }
-
-    /* --- Section Image --- */
-    #imageView {
-      text-align: center;
-    }
-
-    #imageView h2 {
-      font-family: 'Georgia', serif;
-      font-size: 1.8rem;
-      margin-bottom: 20px;
-    }
-
-    #imageView img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    /* --- Pied de page --- */
-    footer {
-      text-align: center;
-      padding: 20px;
-      margin-top: 40px;
-      background-color: #fff;
-      box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    .footer-text {
-      font-size: 0.9rem;
-      color: #7f8c8d;
-      margin-bottom: 10px;
-    }
-
-    .mail-link {
-      font-size: 0.9rem;
-      color: #3498db;
-      text-decoration: none;
-    }
-
-    .mail-link:hover {
-      text-decoration: underline;
-    }
-
-    /* --- Classe utilitaire --- */
-    .hidden {
-      display: none;
-    }
-  </style>
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <header>
-    <h1>🪙 Jeu d'Équilibre</h1>
-  </header>
 
-  <main>
-    <section id="home">
-      <h2>Bienvenue</h2>
-      <p>
-        Le but est de réussir à mettre les 6 clous en équilibre SUR le 7ème.
-      </p>
-      <p>
-        Si tu es bloqué, clic sur les indices un par un.
-      </p>
-      <p>
-        Après le 6ème indice, tu auras accès à la solution en vidéo.
-      </p>
-      <div id="buttons"></div>
-    </section>
+<header>
+  <h1>🪙 Jeu d'Équilibre</h1>
+</header>
 
-    <section id="end" class="hidden">
-      <h2>🎉 Bravo !</h2>
-      <p class="quote">
-        « La force de la nature réside dans son équilibre. »
-      </p>
-      <button onclick="openVideo()">🎬 Solution vidéo</button>
-      <button onclick="openAR()">📱 Solution 3D AR</button>
-    </section>
+<main>
 
-    <section id="imageView" class="hidden">
-      <h2 id="title"></h2>
-      <img id="img" src="">
-      <br>
-      <button onclick="back()">← Retour</button>
-    </section>
-  </main>
+<section id="home">
+  <h2>Bienvenue</h2>
 
-  <footer>
-    <button onclick="resetGame()">🔄 Recommencer</button>
-    <p class="footer-text">© 2026 - Jeu ÉquiClous - Un renseignement, cliquez sur le lien ci-dessous</p>
-    <a href="#" onclick="openMailWithDate()" class="mail-link">jfplemans@gmail.com</a>
-  </footer>
+  <p style="font-weight: bold; font-size: 1.2em;">
+    Le but est de réussir à mettre les 6 clous en équilibre SUR le 7ème
+  </p>
 
-  <script src="script.js"></script>
+  <p>
+    Si tu es bloqué, clic sur les indices un par un.
+  </p>
+  <p style="font-style: italic;">
+    Après le 6ème indice, tu auras accès à la solution en vidéo.
+  </p>
+
+  <div id="buttons"></div>
+
+  <div id="end" class="hidden">
+    <h2>🎉 Bravo !</h2>
+
+    <p class="quote">
+      « La force de la nature réside dans son équilibre. »
+    </p>
+
+    <button onclick="openVideo()">🎬 Solution vidéo</button>
+    <button onclick="openAR()">📱 Solution 3D AR</button>
+  </div>
+</section>
+
+<section id="imageView" class="hidden">
+  <h2 id="title"></h2>
+  <img id="img" src="">
+  <br>
+  <button onclick="back()">← Retour</button>
+</section>
+
+</main>
+
+<footer>
+  <button onclick="resetGame()">🔄 Recommencer</button>
+    <!-- NOUVEAU : Ajoute ton texte ici -->
+  <p class="footer-text">© 2026 - Jeu ÉquiClous - Un renseignement cliquez sur le lien ci-dessous</p>
+  <a href="#" onclick="openMailWithDate()" class="mail-link">jfplemans@gmail.com</a>
+</footer>
+
+<script src="script.js"></script>
 </body>
 </html>
